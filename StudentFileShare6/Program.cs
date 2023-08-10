@@ -29,8 +29,20 @@ builder.Services.AddDbContext<DocumentContext>(options =>
 builder.Services.AddDbContext<UniversityContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))); // Use ServerVersion.AutoDetect()
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+
+
+//builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+//    .AddEntityFrameworkStores<ApplicationDatabaseConnection>();
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false; // Disable email confirmation requirement
+    options.User.RequireUniqueEmail = false; // Disable unique email requirement
+    // options.SignIn.RequireConfirmedPhoneNumber = true; // Enable phone confirmation requirement
+
+})
     .AddEntityFrameworkStores<ApplicationDatabaseConnection>();
+
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
