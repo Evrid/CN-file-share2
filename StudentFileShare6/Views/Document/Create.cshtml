@@ -1,0 +1,449 @@
+﻿@model Document
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> userManager
+
+@{
+    ViewData["Title"] = "创建";
+
+    Random random = new Random();
+    string progressBarId = random.Next(10000000, 99999999).ToString();
+
+    string progressTextId = progressBarId + "text";
+
+    var userId = User.Identity.IsAuthenticated ? userManager.GetUserId(User) : string.Empty;
+
+    string progressBarId2 = random.Next(10000000, 99999999).ToString() + "2";
+}
+
+<h1>创建</h1>
+
+<h4>文档</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form id="createDocumentForm" asp-action="Create" enctype="multipart/form-data">
+            @* We use multipart/form-data because we will submit a file. *@
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @if (User.Identity.IsAuthenticated)
+            {
+
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    请先登录才能上传文档。
+                </div>
+
+            }
+
+            <div class="form-group" style="display: none;">
+                <label asp-for="DocumentID" class="control-label"></label>
+                <input asp-for="DocumentID" class="form-control" value="DefaultDocumentID" />
+                <span asp-validation-for="DocumentID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Name" class="control-label">文件名：</label>
+                <input asp-for="Name" id="nameInput" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SchoolID" class="control-label">请输入大学名称：</label>
+                <input type="text" id="schoolInput" class="form-control" autocomplete="off" list="universityList" required />
+                <datalist id="universityList"></datalist>
+                <input type="hidden" asp-for="SchoolID" />
+            </div>
+
+            <a href="@Url.Content("/university/Create")">创建新的大学</a>
+
+            <div class="form-group">
+                <label asp-for="CourseID" class="control-label">请输入课程名称：</label>
+                <input type="text" id="courseInput" class="form-control" autocomplete="off" list="courseList" required disabled />
+                @*  Disabled unless "schoolInput" is selected first. *@
+                <datalist id="courseList"></datalist>
+                <input type="hidden" asp-for="CourseID" />
+            </div>
+
+            <a href="@Url.Content("/course/create")">创建新的课程</a>
+
+            <div class="form-group">
+                <label asp-for="Year" class="control-label">年份</label>
+                <select asp-for="Year" class="form-control">
+                    @for (int year = 2010; year <= 2040; year++)
+                    {
+                        <option value=@year>@year</option>
+                    }
+                </select>
+                <span asp-validation-for="Year" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Category" class="control-label">类别</label>
+                <select asp-for="Category" class="form-control">
+                    <option value=0>讲义</option>
+                    <option value=1>练习材料</option>
+                    <option value=2>课程作业</option>
+                    <option value=3>总结</option>
+                    <option value=4>作业</option>
+                    <option value=5>辅导材料</option>
+                    <option value=6>文章</option>
+                    <option value=7>其他</option>
+                </select>
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="control-label">输入描述：</label>
+                <input asp-for="Description" class="form-control" value="无描述" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Anonymous" /> 匿名上传
+                </label>
+            </div>
+
+            <div class="form-group" style="display: none;">
+                <label asp-for="UserID" class="control-label"> </label>
+                <input asp-for="UserID" class="form-control" value="@userId" />
+                <span asp-validation-for="UserID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="display: none;">
+                <label asp-for="Link" class="control-label"></label>
+                <input asp-for="Link" class="form-control" value="DefaultLink" />
+                <span asp-validation-for="Link" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="fileInput" class="control-label">选择文件（仅支持10 MB以内的PDF文件）</label>
+                <input id="fileInput" type="file" class="form-control-file" name="file" />
+                <span id="fileInputError" class="text-danger">未选择文件</span>
+            </div>
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="form-group">
+                    <input type="submit" value="创建" class="btn btn-primary" onclick="startProgressBar()" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <input type="submit" value="创建" class="btn btn-primary" disabled />
+                </div>
+            }
+
+            <!-- Add an ID to the progress bar, first one for SignalR, second one for auto update -->
+            <div id="progress-bar-container" style="width: 200px; height: 20px;">
+                <div id="@Html.Raw(progressBarId)"></div>
+            </div>
+            <p>在谷歌浏览器中才支持进度条更新，火狐浏览器不支持</p>
+            @*<div id="progress-bar-container" style="width: 200px; height: 20px;">
+            <div id="@Html.Raw(progressBarId2)"></div>
+            </div>*@
+            <P id="@Html.Raw(progressTextId)" style="color: red; font-size: 14px;">等待上传</P>
+            @*  Razor syntax does not allow assigning values to HTML attributes directly using variables.*@
+        </form>
+    </div>
+    <div class="col-md-6 col-md-offset-2">
+        <p>
+            现有课程：
+        </p>
+        <p>
+            <strong>上海大学：</strong>
+            <br />
+            <span>数据库</span>
+            <br />
+            <span>数学分析</span>
+            <br />
+        </p>
+        <p>
+            <strong>上海科技大学：</strong>
+            <br />
+            <span>物理</span>
+            <br />
+            <span>航空航天工程</span>
+            <br />
+        </p>
+    </div>
+</div>
+
+<div>
+    @*  <a asp-action="Index">返回列表</a>*@
+    <a href="@Url.Content("/home/index")">返回主页</a>
+</div>
+
+@section Scripts {
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+
+    <script src="~/js/fileUploadProgressBar.js"></script>
+    @* in the "js" folder in "wwwroot" folder *@
+    <script src="~/js/signalr/dist/browser/signalr.js"></script>
+
+
+    <script>
+        // Ensure the user only selects "pdf" and the file size is within 10MB
+        document.getElementById('fileInput').addEventListener('input', function (event) {
+            var file = event.target.files[0];
+            var fileSize = file.size / 1024 / 1024; // Size in MB
+
+            if (!file.type.match('application/pdf')) {
+                document.getElementById('fileInputError').textContent = '请选择一个PDF文件。';
+                alert("请选择一个PDF文件。"); // Please select a PDF file.
+                event.target.value = ''; // Clear the file input
+                return;
+            }
+
+            if (fileSize > 10) {
+                document.getElementById('fileInputError').textContent = '文件大小必须小于10MB。';
+                alert("文件大小必须小于10MB。"); // File size must be less than 10MB.
+                event.target.value = ''; // Clear the file input
+                return;
+            }
+
+            document.getElementById('fileInputError').textContent = '';
+        });
+    </script>
+
+
+
+    <script>
+        //for file uploading progress bar
+        connection.on("UpdateFileProgressIdentifier", (fileID, progressPercentage) => {
+            // Handle the received parameters
+            console.log("Connection on and should display message");
+            console.log(progressPercentage);
+            updateProgressBar("@progressBarId", "@progressTextId", progressPercentage);
+            //we MUST put updateProgressBar() before console.log() because if not, then after console.log() being executed then it execute updateProgressBar() but we can't see, because it is too late
+            console.log("Received parameters:", fileID, progressPercentage);
+
+
+
+
+        });
+
+
+    </script>
+
+
+
+
+
+    <script>
+        //For university
+        const inputElement = document.getElementById('schoolInput');
+        const datalistElement = document.getElementById('universityList');
+        const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
+        // When the user selects an option from the datalist, the corresponding value is set to the hidden input field (hiddenInput.value = selectedValue). This means that when the form is submitted, the value of the hidden input field will be included in the form data
+
+        var SelectedSchoolID;   //for select course only in the university
+
+
+        inputElement.addEventListener('input', function () {
+            const inputText = inputElement.value;
+            if (inputText.length === 0) {
+                datalistElement.innerHTML = ''; // Clear the datalist if the input is empty
+            } else {
+
+                //  console.log(inputText);   //works well
+                getUniversities(inputText);
+            }
+        });
+
+        function getUniversities(searchText) {
+            fetch(`/Document/GetUniversities?searchText=${searchText}`)
+                //the GetUniversities function in DocumentController.cs is not directly called in the Create.cshtml file.
+                // Instead, it is called asynchronously from JavaScript code using the fetch API.
+                .then(response => response.json())
+                .then(data => {
+                    datalistElement.innerHTML = ''; // Clear the datalist
+                    //       console.log(data); // Log the response data to the console, works well
+                    //        console.log(typeof(data));
+                    //if the typeof(data) is showing "object" instead of an array, it suggests that the data variable is an object rather than an array.
+                    for (const key in data) {
+                        // iterate over the enumerable properties of an object.
+                        if (data.hasOwnProperty(key)) {
+                            //The hasOwnProperty() method is used to ensure that the property belongs directly to the data object itself and not to its prototype chain.
+                            const university = data[key];
+                            console.log(university);  // works well
+                            const optionElement = document.createElement('option');
+                            optionElement.text = university.name + " (" + university.location + ")";
+                            optionElement.setAttribute('data-value', university.schoolID);
+                            //  console.log(university.name);   //works well
+                            datalistElement.appendChild(optionElement);
+                        }
+                    }
+
+                    // Event listener to handle option selection, set the value of input “schoolID” to the corresponding “name” of the school user selected
+                    schoolInput.addEventListener('input', function (event) {
+                        const selectedText = event.target.value;
+                        const selectedOption = Array.from(datalistElement.options).find(option => option.text === selectedText);
+
+                        if (selectedOption) {
+                            const selectedValue = selectedOption.getAttribute('data-value');
+                            hiddenInput.value = selectedValue;
+                            console.log('Selected UniversityID Value:', selectedValue);
+                            SelectedSchoolID = hiddenInput.value;    //for select course only in that university
+                            //    console.log(' SelectedSchoolID:', SelectedSchoolID);
+                            console.log(typeof (SelectedSchoolID));
+                        } else {
+                            hiddenInput.value = '';
+                            console.log('Selected UniversityID Value: None');
+                        }
+                    });
+                });
+        }
+    </script>
+
+    <script>
+        //undisable "course" selection when the user has selected something from "university"
+
+        document.getElementById('schoolInput').addEventListener('input', function () {
+            //The "change" event listener will be triggered when the user selects an option from a dropdown, but not when they simply enter text in the input field (we use "input" if we want to detect if the user entered something).
+            var secondInput = document.getElementById('courseInput');
+            secondInput.disabled = false;
+        });
+
+    </script>
+
+    <script>
+        //For courses
+
+        const inputElement2 = document.getElementById('courseInput');
+        const datalistElement2 = document.getElementById('courseList');
+        const hiddenInput2 = document.querySelector('input[type="hidden"][name="CourseID"]');
+        // When the user selects an option from the datalist, the corresponding value is set to the hidden input field. This means that when the form is submitted, the value of the hidden input field will be included in the form data
+
+
+        inputElement2.addEventListener('input', function () {
+            const inputText2 = inputElement2.value;
+            if (inputText2.length === 0) {
+                datalistElement2.innerHTML = ''; // Clear the datalist if the input is empty
+            } else {
+
+                //  console.log(inputText);   //works well
+                getCourses(inputText2);
+            }
+        });
+
+        function getCourses(searchText2) {
+            fetch(`/Document/GetCourses?searchText=${searchText2}&SelectedSchoolID=${SelectedSchoolID}`)
+
+                //the GetUniversities function in DocumentController.cs is not directly called in the Create.cshtml file.
+                // Instead, it is called asynchronously from JavaScript code using the fetch API.
+                .then(response => response.json())
+                .then(data => {
+                    datalistElement2.innerHTML = ''; // Clear the datalist
+                    //       console.log(data); // Log the response data to the console, works well
+                    //        console.log(typeof(data));
+                    //if the typeof(data) is showing "object" instead of an array, it suggests that the data variable is an object rather than an array.
+                    for (const key in data) {
+                        // iterate over the enumerable properties of an object.
+                        if (data.hasOwnProperty(key)) {
+                            //The hasOwnProperty() method is used to ensure that the property belongs directly to the data object itself and not to its prototype chain.
+                            const course = data[key];
+                            console.log(course);  // works well
+                            const optionElement = document.createElement('option');
+                            optionElement.text = course.name;
+                            optionElement.setAttribute('data-value', course.courseID);
+                            //   console.log(course.name);   //works well
+                            datalistElement2.appendChild(optionElement);
+                        }
+                    }
+
+                    // Event listener to handle option selection, set the value of input “schoolID” to the corresponding “name” of the school user selected
+                    courseInput.addEventListener('input', function (event) {
+                        const selectedText = event.target.value;
+                        const selectedOption = Array.from(datalistElement2.options).find(option => option.text === selectedText);
+
+                        if (selectedOption) {
+                            const selectedValue = selectedOption.getAttribute('data-value');
+                            hiddenInput2.value = selectedValue;
+                            console.log('Selected CourseID Value:', selectedValue);
+                        } else {
+                            hiddenInput2.value = '';
+                            console.log('Selected CourseID Value: None');
+                        }
+                    });
+                });
+        }
+    </script>
+
+
+    <script>
+
+
+        document.querySelector('input[type="submit"]').addEventListener('click', function (event) {
+            var input = document.getElementById('courseInput');
+            var options = document.getElementById('courseList').options;
+            var value = input.value;
+            var fileInput = document.getElementById('fileInput');
+            var name = document.getElementById('nameInput').value;
+
+            var match = Array.from(options).find(function (option) {
+                return option.value === value;
+            });
+
+            if (!match || fileInput.files.length === 0 || name === '') {
+                event.preventDefault(); // Prevent form submission
+
+                var errorMessage = '';
+
+                if (!match) {
+                    errorMessage += '请选择并输入有效的大学选项，然后从列表中选择课程选项。 ';
+                    // Please enter and select a valid university option then enter and select a course option from the list.
+                }
+
+                if (fileInput.files.length === 0) {
+                    errorMessage += '请选择要上传的文档。 ';
+                    // Please select a document to upload.
+                }
+
+                if (name === '') {
+                    errorMessage += '请提供“您的文件名称”字段的值。';
+                    // Please provide a value for the "Name of your file" field.
+                }
+
+                alert(errorMessage);
+            }
+        });
+
+
+
+    </script>
+
+
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        //used to generate HTML dynamically on the server-side, the code is rendering the "_ValidationScriptsPartial" partial view and waiting for its completion using the await keyword
+    }
+
+
+}
+
+<style>
+    #progress-bar-container {
+        width: 200px;
+        height: 20px;
+        background-color: #f2f2f2;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+        #progress-bar-container > div {
+            width: 0;
+            height: 100%;
+            background-color: #007bff;
+            transition: width 0.5s;
+        }
+
+</style>
+

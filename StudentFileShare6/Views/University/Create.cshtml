@@ -1,0 +1,99 @@
+﻿@model University
+
+@{
+    ViewData["Title"] = "创建";
+}
+
+<h1>创建</h1>
+
+<h4>大学</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @* The below code hides the input field and gives a default value for "SchoolID", which is necessary because ModelState.IsValid will be false otherwise. *@
+
+            <div class="form-group" style="display: none;">
+                <label asp-for="SchoolID" class="control-label"></label>
+                <input asp-for="SchoolID" class="form-control" value="DefaultSchoolID" />
+                <span asp-validation-for="SchoolID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">学校名称：</label>
+                <input asp-for="Name" id="nameInput" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">城市名称：</label>
+                <input asp-for="Location" id="locationInput" class="form-control" />
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="创建" id="submitButton" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+
+    <div class="col-md-6 col-md-offset-2">
+        <p>
+            已有大学：<br />
+        </p>
+
+        <p>
+            <strong>名称：</strong>上海大学，<strong>城市：</strong>上海
+        </p>
+        <p>
+            <strong>名称：</strong>上海科技大学，<strong>城市：</strong>上海
+        </p>
+        <p>
+            <strong>名称：</strong>四川大学，<strong>城市：</strong>成都
+        </p>
+        </p>
+        <p>
+            <strong>名称：</strong>四川师范大学，<strong>城市：</strong>成都
+        </p>
+    </div>
+</div>
+
+@*<div>
+    <a asp-action="Index">Back to List</a>
+</div>*@
+
+<a href="@Url.Content("/Document/Create")">返回上传文档</a>
+
+@section Scripts {
+    <script>
+        // To prevent the user from submitting the form if the university name already exists with the given location
+        document.getElementById('submitButton').addEventListener('click', function (event) {
+            event.preventDefault(); // Prevents the form from submitting immediately
+
+            var name = document.getElementById('nameInput').value;
+            console.log("Here is good.");
+
+            var locationValue = document.getElementById('locationInput').value;
+
+            fetch(`/Document/ifUniversityExist?givenName=${name}&givenLocation=${locationValue}`)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.length > 0) {
+                        alert('该大学名称在指定位置已存在。');
+                    } else {
+                        nameInput.form.submit();
+                        // Submit the form if the name doesn't exist
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

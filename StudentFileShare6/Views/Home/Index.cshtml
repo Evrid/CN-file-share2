@@ -1,0 +1,39 @@
+﻿@model Document
+
+@{
+    ViewData["Title"] = "首页";
+}
+
+<div class="text-center">
+    <h1 class="display-4">欢迎</h1>
+</div>
+
+<style>
+    .text-center button {
+        margin-bottom: 40px; /* 在每个按钮下方添加10像素的边距 */
+    }
+</style>
+
+<div class="text-center">
+    <a href="@Url.Content("/university/Create")">
+        <button type="button">创建新的大学</button>
+    </a>
+</div>
+
+<div class="text-center">
+    <a href="@Url.Content("/course/create")">
+        <button type="button">创建新课程</button>
+    </a>
+</div>
+
+<div class="text-center">
+    <a href="@Url.Content("/Document/Create")">
+        <button type="button">上传文档</button>
+    </a>
+</div>
+
+<div class="text-center">
+    <a href="@Url.Content("/search/index")">
+        <button type="button">搜索文档</button>
+    </a>
+</div>

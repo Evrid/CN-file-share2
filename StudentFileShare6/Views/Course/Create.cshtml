@@ -1,0 +1,160 @@
+﻿@model StudentFileShare6.Models.Course
+
+@{
+    ViewData["Title"] = "创建";
+}
+
+<h1>创建</h1>
+
+<h4>课程</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group" style="display: none;">
+                <label asp-for="CourseID" class="control-label"></label>
+                <input asp-for="CourseID" class="form-control" value="DefaultCourseID" />
+                <span asp-validation-for="CourseID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">课程名称：</label>
+                <input asp-for="CourseName" id="courseNameInput" class="form-control" />
+                <span asp-validation-for="CourseName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SchoolID" class="control-label">请输入并选择学校名称：</label>
+                <input type="text" id="schoolInput" class="form-control" autocomplete="off" list="universityList" />
+                <datalist id="universityList"></datalist>
+                <input type="hidden" asp-for="SchoolID" />
+            </div>
+            <a href="@Url.Content("/university/Create")">创建新的大学</a>
+
+            <div class="form-group">
+                <input type="submit" value="创建" id="submitButton" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+    <div class="col-md-6 col-md-offset-2">
+        <p>
+            现有课程：
+        </p>
+        <p>
+            <strong>上海大学：</strong>
+            <br />
+            <span>数据库</span>
+            <br />
+            <span>数学分析</span>
+            <br />
+        </p>
+        <p>
+            <strong>上海科技大学：</strong>
+            <br />
+            <span>物理</span>
+            <br />
+            <span>航空航天工程</span>
+            <br />
+        </p>
+    </div>
+</div>
+
+@*<div>
+    <a asp-action="Index">返回列表</a>
+</div>*@
+
+<a href="@Url.Content("/Document/Create")">返回上传文档</a>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // For dynamic university input
+        const inputElement = document.getElementById('schoolInput');
+        const datalistElement = document.getElementById('universityList');
+        const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
+
+        inputElement.addEventListener('input', function () {
+            const inputText = inputElement.value;
+            if (inputText.length === 0) {
+                datalistElement.innerHTML = ''; // Clear the datalist if the input is empty
+            } else {
+                getUniversities(inputText);
+            }
+        });
+
+        function getUniversities(searchText) {
+            fetch(`/Document/GetUniversities?searchText=${searchText}`)
+                .then(response => response.json())
+                .then(data => {
+                    datalistElement.innerHTML = ''; // Clear the datalist
+
+                    for (const key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            const university = data[key];
+                            const optionElement = document.createElement('option');
+                            optionElement.text = university.name;
+                            optionElement.setAttribute('data-value', university.schoolID);
+                            datalistElement.appendChild(optionElement);
+                        }
+                    }
+
+                    // Event listener to handle option selection, set the value of input "schoolID" to the corresponding "name" of the school user selected
+                    schoolInput.addEventListener('input', function (event) {
+                        const selectedText = event.target.value;
+                        const selectedOption = Array.from(datalistElement.options).find(option => option.text === selectedText);
+
+                        if (selectedOption) {
+                            const selectedValue = selectedOption.getAttribute('data-value');
+                            hiddenInput.value = selectedValue;
+                        } else {
+                            hiddenInput.value = '';
+                        }
+                    });
+                });
+        }
+    </script>
+
+    <script>
+        // If the user didn't select the right option when clicking the submit button, prevent form submission to keep the data they entered
+        document.querySelector('input[type="submit"]').addEventListener('click', function (event) {
+            var input = document.getElementById('schoolInput');
+            var options = document.getElementById('universityList').options;
+            var value = input.value;
+
+            var match = Array.from(options).find(function (option) {
+                return option.value === value;
+            });
+
+            if (!match) {
+                event.preventDefault(); // Prevent form submission
+                alert('请从列表中输入并选择大学名称。');
+            } else {
+                var courseNameInput = document.getElementById('courseNameInput').value;
+
+                event.preventDefault(); // Prevents the form from submitting immediately
+
+                fetch(`/Document/ifCourseExist?givenCourse=${courseNameInput}&SelectedSchoolID=${hiddenInput.value}`)
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data.length > 0) {
+                            alert('该课程在指定大学已存在。');
+                        } else {
+                            // Submit the form if the course doesn't exist
+                            document.getElementById('courseNameInput').form.submit();
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+        });
+    </script>
+}

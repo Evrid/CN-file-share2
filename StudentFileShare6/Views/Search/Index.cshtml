@@ -1,0 +1,453 @@
+﻿@model Document
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>搜索索引</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <form id="searchDocumentForm" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label asp-for="SchoolID" class="control-label">请输入并选择大学名称：</label>
+                <input type="text" id="schoolInput" class="form-control" autocomplete="off" list="universityList" required />
+                <datalist id="universityList"></datalist>
+                <input type="hidden" asp-for="SchoolID" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="CourseID" class="control-label">请输入并选择课程名称：</label>
+                <input type="text" id="courseInput" class="form-control" autocomplete="off" list="courseList" required disabled />
+                <!-- disabled，除非先从“schoolInput”中选择 -->
+                <datalist id="courseList"></datalist>
+                <input type="hidden" asp-for="CourseID" />
+            </div>
+
+            <div>
+                <label for="textInput">要搜索的文件名：</label>
+                <input type="text" id="textInput" name="textInput" required>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="搜索" class="btn btn-primary" />
+            </div>
+        </form>
+
+        <div style="height: 100px"></div>
+
+        <div id="searchResultsSection" style="display: none;">
+            <h2>搜索结果</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>名称和预览</th>
+                        <th>年份</th>
+                        <th>类别</th>
+                        <th>描述</th>
+                        <th>评分</th>
+                    </tr>
+                </thead>
+                <tbody id="searchResultsBody">
+                    <!-- 搜索结果将动态添加在这里 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-md-offset-2">
+        <p>现有课程：</p>
+
+        <p>
+            <strong>上海大学：</strong><br>
+            数据库<br>
+            数学分析
+        </p>
+
+        <p>
+            <strong>上海科技大学：</strong><br>
+            物理<br>
+            航空航天工程
+        </p>
+
+        <p>每门课程我们都有两份“<strong>讲义</strong>”和两份“<strong>作业</strong>”。</p>
+        <p>在搜索时，请使用上述信息，如“<strong>上海大学</strong>”、“<strong>数据库</strong>”、“<strong>作业</strong>”。</p>
+    </div>
+
+</div>
+
+
+
+@section Scripts {
+
+ 
+
+
+
+    <script>
+        //For university
+        const inputElement = document.getElementById('schoolInput');
+        const datalistElement = document.getElementById('universityList');
+        const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
+        // When the user selects an option from the datalist, the corresponding value is set to the hidden input field (hiddenInput.value = selectedValue). This means that when the form is submitted, the value of the hidden input field will be included in the form data
+
+        var SelectedSchoolID;   //for select course only in the university
+
+
+        inputElement.addEventListener('input', function () {
+            const inputText = inputElement.value;
+            if (inputText.length === 0) {
+                datalistElement.innerHTML = ''; // Clear the datalist if the input is empty
+            } else {
+
+                //  console.log(inputText);   //works well
+                getUniversities(inputText);
+            }
+        });
+
+        function getUniversities(searchText) {
+            fetch(`/Document/GetUniversities?searchText=${searchText}`)
+                //the GetUniversities function in DocumentController.cs is not directly called in the Create.cshtml file.
+                // Instead, it is called asynchronously from JavaScript code using the fetch API.
+                .then(response => response.json())
+                .then(data => {
+                    datalistElement.innerHTML = ''; // Clear the datalist
+                    //       console.log(data); // Log the response data to the console, works well
+                    //        console.log(typeof(data));
+                    //if the typeof(data) is showing "object" instead of an array, it suggests that the data variable is an object rather than an array.
+                    for (const key in data) {
+                        // iterate over the enumerable properties of an object.
+                        if (data.hasOwnProperty(key)) {
+                            //The hasOwnProperty() method is used to ensure that the property belongs directly to the data object itself and not to its prototype chain.
+                            const university = data[key];
+                            console.log(university);  // works well
+                            const optionElement = document.createElement('option');
+                            optionElement.text = university.name + " (" + university.location + ")";
+                            optionElement.setAttribute('data-value', university.schoolID);
+                            //  console.log(university.name);   //works well
+                            datalistElement.appendChild(optionElement);
+                        }
+                    }
+                    console.log("Before change event triggered")
+                    // Event listener to handle option selection, set the value of input “schoolID” to the corresponding “name” of the school user selected
+                    schoolInput.addEventListener('input', function (event) {
+                        //we must use "input", "change" work in visual studio but doesn't work in Azure
+                        console.log("After change event triggered")
+                        const selectedText = event.target.value;
+                        const selectedOption = Array.from(datalistElement.options).find(option => option.text === selectedText);
+
+                        if (selectedOption) {
+                            const selectedValue = selectedOption.getAttribute('data-value');
+                            hiddenInput.value = selectedValue;
+                            console.log('Selected UniversityID Value:', selectedValue);
+                            SelectedSchoolID = hiddenInput.value;    //for select course only in that university
+                            console.log(' SelectedSchoolID:', SelectedSchoolID);
+                            //  console.log(typeof (SelectedSchoolID));
+                            // Set the value of the hidden input field for school ID
+
+                        } else {
+                            hiddenInput.value = '';
+                            console.log('Selected UniversityID Value: None');
+
+                        }
+                    });
+                });
+        }
+    </script>
+
+    <script>
+        //undisable "course" selection when the user has selected something from "university"
+
+        document.getElementById('schoolInput').addEventListener('change', function () {
+            //The "change" event listener will be triggered when the user selects an option from a dropdown, but not when they simply enter text in the input field (we use "input" if we want to detect if the user entered something).
+            var secondInput = document.getElementById('courseInput');
+            secondInput.disabled = false;
+        });
+
+    </script>
+
+    <script>
+        //For courses
+
+        const inputElement2 = document.getElementById('courseInput');
+        const datalistElement2 = document.getElementById('courseList');
+        const hiddenInput2 = document.querySelector('input[type="hidden"][name="CourseID"]');
+        // When the user selects an option from the datalist, the corresponding value is set to the hidden input field. This means that when the form is submitted, the value of the hidden input field will be included in the form data
+
+
+        inputElement2.addEventListener('input', function () {
+            const inputText2 = inputElement2.value;
+            if (inputText2.length === 0) {
+                datalistElement2.innerHTML = ''; // Clear the datalist if the input is empty
+            } else {
+
+                  console.log(inputText2);   //works well
+                getCourses(inputText2);
+            }
+        });
+
+        function getCourses(searchText2) {
+            fetch(`/Document/GetCourses?searchText=${searchText2}&SelectedSchoolID=${SelectedSchoolID}`)
+
+                //the GetUniversities function in DocumentController.cs is not directly called in the Create.cshtml file.
+                // Instead, it is called asynchronously from JavaScript code using the fetch API.
+                .then(response => response.json())
+                .then(data => {
+                    console.log("got json reponse");
+                    console.log(data);
+                    datalistElement2.innerHTML = ''; // Clear the datalist
+                    //       console.log(data); // Log the response data to the console, works well
+                    //        console.log(typeof(data));
+                    //if the typeof(data) is showing "object" instead of an array, it suggests that the data variable is an object rather than an array.
+                    for (const key in data) {
+                        console.log(key);
+                        // iterate over the enumerable properties of an object.
+                        if (data.hasOwnProperty(key)) {
+                            //The hasOwnProperty() method is used to ensure that the property belongs directly to the data object itself and not to its prototype chain.
+                            const course = data[key];
+                            console.log(course);  // works well
+                            const optionElement = document.createElement('option');
+                            optionElement.text = course.name;
+                            optionElement.setAttribute('data-value', course.courseID);
+                            //   console.log(course.name);   //works well
+                            datalistElement2.appendChild(optionElement);
+                        }
+                    }
+
+                    // Event listener to handle option selection, set the value of input “schoolID” to the corresponding “name” of the school user selected
+                    courseInput.addEventListener('input', function (event) {
+                        const selectedText = event.target.value;
+                        const selectedOption = Array.from(datalistElement2.options).find(option => option.text === selectedText);
+
+                        if (selectedOption) {
+                            const selectedValue = selectedOption.getAttribute('data-value');
+                            hiddenInput2.value = selectedValue;
+                            console.log('Selected CourseID Value:', selectedValue);
+                        } else {
+                            hiddenInput2.value = '';
+                            console.log('Selected CourseID Value: None');
+                        }
+                    });
+                });
+        }
+    </script>
+
+
+    <script>
+        //ask user must select from datalist of courseList
+        document.querySelector('form').addEventListener('submit', function (event) {
+            var input = document.getElementById('courseInput');
+            var options = document.getElementById('courseList').options;
+            var value = input.value;
+
+            var match = Array.from(options).find(function (option) {
+                return option.value === value;
+            });
+
+            if (!match) {
+                event.preventDefault(); // Prevent form submission
+                alert('从列表中选择有效的大学后，从列表中选择有效的课程选项。');
+            }
+        });
+
+    </script>
+
+
+
+
+
+    <script>
+     
+
+        //AJAX doesn't work in Azure, we must use javascript
+        //document.getElementById("searchDocumentForm").addEventListener("submit", function (event) {
+
+        document.querySelector('input[type="submit"]').addEventListener('click', function (event) {
+
+
+            var input = document.getElementById('courseInput');
+            var options = document.getElementById('courseList').options;
+            var value = input.value;
+
+            var match = Array.from(options).find(function (option) {
+                return option.value === value;
+            });
+
+            if (!match) {
+                event.preventDefault(); // Prevent form submission
+                alert('从列表中选择有效的大学后，请从列表中选择有效的课程选项。');
+            }
+            //event.preventDefault(); // Prevent the form from submitting and page reloading
+
+            else {
+                event.preventDefault();
+            // Get the search input values
+            var textInput = document.getElementById("textInput").value;
+            console.log ("now goes inside else, log school and course");
+                console.log(hiddenInput.value);
+                console.log(hiddenInput2.value);
+            // Perform AJAX request to get search results
+
+
+
+
+
+            fetch("/Search/Search?SchoolID=" + hiddenInput.value + "&CourseID=" + hiddenInput2.value + "&textInput=" + encodeURIComponent(textInput))
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Network response was not ok.');
+                    }
+                })
+                .then(searchResults => {
+                    console.log(' searchResults:', searchResults);
+
+                    // Update the search results section with the received data
+                    var searchResultsBody = document.getElementById("searchResultsBody");
+                    searchResultsBody.innerHTML = ""; // Clear previous results
+
+                    if (searchResults.length > 0) {
+                        // Display search results
+                        searchResults.forEach(function (result) {
+                            var row = document.createElement("tr");
+
+                            var nameCell = document.createElement("td");
+                            var link = document.createElement("a");
+                            link.href = "/Document/docview/" + result.universityName + "/" + result.courseName + "/" + result.name + "/" + result.documentID;
+                            link.textContent = result.name;
+                            nameCell.appendChild(link);
+                            nameCell.classList.add("hyperlink"); // Add a CSS class for styling if desired
+                            row.appendChild(nameCell);
+
+
+
+
+
+
+                      
+                                                        var image = document.createElement("img");
+                                                        var originalLink = result.firstPageImageLink;
+                                                        var imageURL = originalLink.replace(/^http:/, 'https:');   //we must use it because we need all https link, otherwise won't work
+
+                                console.log("image url:");
+                                                          console.log(imageURL);
+                                                    //   var imageURL = "https://pdffirstpageimage.oss-eu-central-1.aliyuncs.com/693438484?Expires=4844246788&OSSAccessKeyId=LTAI5tHfC1uRSqRZswqEo5EQ&Signature=f2YXlcI11LUgJanyED980Eq8D3w%3D"; // Replace with the URL of the byte array
+                                                          // Fetch the byte array from the URL
+                                                        fetch(imageURL)
+                                                            .then(response => response.arrayBuffer())
+                                                            .then(buffer => {
+                                                                // Convert byte array to base64-encoded image data
+                                                                var byteArray = new Uint8Array(buffer);
+                                                                var binaryData = [];
+                                                                for (var i = 0; i < byteArray.byteLength; i++) {
+                                                                    binaryData.push(byteArray[i]);
+                                                                }
+                                                                var base64Data = btoa(String.fromCharCode.apply(null, binaryData));
+
+                                                                image.src = "data:image/png;base64," + base64Data;
+
+                                                                // Adjust the size of the displayed image
+                                                                image.style.width = "200px"; // Set the desired width
+                                                                image.style.height = "auto"; // Set height to "auto" for aspect ratio to be preserved
+
+                                                                nameCell.appendChild(image);
+
+                                                            })
+                                                            .catch(error => {
+                                                                console.error("Failed to fetch or convert the byte array:", error);
+                                                            });
+
+
+
+
+
+
+                            var yearCell = document.createElement("td");
+                            yearCell.textContent = result.year;
+                            row.appendChild(yearCell);
+
+                            var categoryCell = document.createElement("td");
+                            var categoryValue = result.category;
+
+                                switch (categoryValue) {
+                                    case 0:
+                                        categoryCell.textContent = "讲义";
+                                        break;
+                                    case 1:
+                                        categoryCell.textContent = "练习材料";
+                                        break;
+                                    case 2:
+                                        categoryCell.textContent = "课程作业";
+                                        break;
+                                    case 3:
+                                        categoryCell.textContent = "摘要";
+                                        break;
+                                    case 4:
+                                        categoryCell.textContent = "作业";
+                                        break;
+                                    case 5:
+                                        categoryCell.textContent = "教程作业";
+                                        break;
+                                    case 6:
+                                        categoryCell.textContent = "论文";
+                                        break;
+                                    case 7:
+                                        categoryCell.textContent = "其他";
+                                        break;
+                                    default:
+                                        categoryCell.textContent = "未知类别";
+                                        break;
+                                }
+
+
+                            row.appendChild(categoryCell);
+
+
+                            var descriptionCell = document.createElement("td");
+                            descriptionCell.textContent = result.description;
+                            row.appendChild(descriptionCell);
+
+                            var ratingCell = document.createElement("td");
+                            if (result.rating == null) {
+                                ratingCell.textContent = "none"
+                            } else {
+                                ratingCell.textContent = result.rating + "%";
+                            }
+                            row.appendChild(ratingCell);
+
+                            searchResultsBody.appendChild(row);
+                        });
+
+                        // Show the search results section
+                        document.getElementById("searchResultsSection").style.display = "block";
+                    } else {
+                        // No results found
+                        searchResultsBody.innerHTML = "<tr><td colspan='2'>No results found.</td></tr>";
+                        document.getElementById("searchResultsSection").style.display = "block";
+                    }
+                })
+                .catch(error => {
+                    console.error("There has been a problem with your fetch operation: ", error);
+                });
+            }
+        });
+
+
+    </script>
+
+
+
+
+
+
+
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        //used to generate HTML dynamically on the server-side, the code is rendering the "_ValidationScriptsPartial" partial view and waiting for its completion using the await keyword
+    }
+
+
+}

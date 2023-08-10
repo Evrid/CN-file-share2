@@ -1,0 +1,23 @@
+﻿@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "错误";
+}
+
+<h1 class="text-danger">错误。</h1>
+<h2 class="text-danger">在处理您的请求时发生了错误。</h2>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>请求标识：</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+<h3>开发模式</h3>
+<p>
+    切换至<strong>开发</strong>环境将显示有关发生的错误的更多详细信息。
+</p>
+<p>
+    <strong>部署的应用程序不应启用开发环境</strong>，因为它可能导致敏感信息从异常中显示给最终用户。对于本地调试，可以通过将<strong>ASPNETCORE_ENVIRONMENT</strong>环境变量设置为<strong>Development</strong>，然后重新启动应用程序来启用开发环境。
+</p>
