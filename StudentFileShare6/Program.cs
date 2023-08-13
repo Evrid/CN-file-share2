@@ -38,7 +38,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false; // Disable email confirmation requirement
     options.User.RequireUniqueEmail = false; // Disable unique email requirement
-    // options.SignIn.RequireConfirmedPhoneNumber = true; // Enable phone confirmation requirement
+    options.SignIn.RequireConfirmedPhoneNumber = true; // Enable phone confirmation requirement
 
 })
     .AddEntityFrameworkStores<ApplicationDatabaseConnection>();
