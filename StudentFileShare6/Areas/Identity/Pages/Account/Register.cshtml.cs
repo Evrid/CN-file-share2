@@ -84,17 +84,18 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             [Required(ErrorMessage = "电话号码字段为必填项。")]
             [DataType(DataType.PhoneNumber)]
             [Display(Name = "电话号码")]
+            [Phone]
             public string PhoneNumber { get; set; }
 
 
-            [Required]
+            [Required(ErrorMessage = "验证码为必填项。")]
             [Display(Name = "验证码")]
             public string VerificationCode { get; set; }
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
+            [Required(ErrorMessage = "密码为必填项。")]
             [StringLength(100, ErrorMessage = "{0} 的长度必须至少为 {2} 个字符，最多为 {1} 个字符。", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "密码")]
@@ -104,6 +105,7 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
+            [Required(ErrorMessage = "确认密码为必填项。")]
             [DataType(DataType.Password)]
             [Display(Name = "确认密码")]
             [Compare("Password", ErrorMessage = "密码和确认密码不匹配。")]
