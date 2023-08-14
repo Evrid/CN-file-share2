@@ -86,7 +86,7 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             [Required(ErrorMessage = "电话号码字段为必填项。")]
             [DataType(DataType.PhoneNumber)]
             [Display(Name = "电话号码")]
-            [Phone]
+            [Phone(ErrorMessage = "电话号码不是有效的。")]
             public string PhoneNumber { get; set; }
 
 
