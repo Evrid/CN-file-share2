@@ -141,7 +141,7 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, "登录尝试无效。");
+                        ModelState.AddModelError(string.Empty, "用户名或密码错误");
                         return Page();
                     }
                 }
