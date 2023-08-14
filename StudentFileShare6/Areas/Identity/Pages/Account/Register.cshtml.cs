@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace StudentFileShare6.Areas.Identity.Pages.Account
 {
@@ -29,13 +30,16 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private IMemoryCache _cache;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IMemoryCache memoryCache
+            )
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -43,6 +47,7 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _cache = memoryCache;
         }
 
         /// <summary>
@@ -81,6 +86,10 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
 
+
+            [Required]
+            [Display(Name = "Verification Code")]
+            public string VerificationCode { get; set; }
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
@@ -112,8 +121,29 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+
+
+
             if (ModelState.IsValid)
             {
+
+                // Check the verification code first
+                if (_cache.TryGetValue(Input.PhoneNumber, out string storedCode))
+                {
+                    if (storedCode != Input.VerificationCode)
+                    {
+                        ModelState.AddModelError(string.Empty, "Invalid verification code.");
+                        return Page();
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Verification code has expired or is invalid.");
+                    return Page();
+                }
+
+
                 var user = CreateUser();
 
                 await _userStore.SetUserNameAsync(user, Input.PhoneNumber, CancellationToken.None);
@@ -183,5 +213,13 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             }
             return (IUserEmailStore<IdentityUser>)_userStore;
         }
+
+
+        private string GenerateRandomCode()    //SMS for phone registration 
+        {
+            Random random = new Random();
+            return random.Next(100000, 999999).ToString();
+        }
+
     }
 }
