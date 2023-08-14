@@ -81,23 +81,23 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             /// </summary>
             //[Required]
             //[EmailAddress]
-            [Required(ErrorMessage = "The phone number field is required.")]
+            [Required(ErrorMessage = "电话号码字段为必填项。")]
             [DataType(DataType.PhoneNumber)]
-            [Display(Name = "Phone number")]
+            [Display(Name = "电话号码")]
             public string PhoneNumber { get; set; }
 
 
             [Required]
-            [Display(Name = "Verification Code")]
+            [Display(Name = "验证码")]
             public string VerificationCode { get; set; }
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [StringLength(100, ErrorMessage = "{0} 的长度必须至少为 {2} 个字符，最多为 {1} 个字符。", MinimumLength = 6)]
             [DataType(DataType.Password)]
-            [Display(Name = "Password")]
+            [Display(Name = "密码")]
             public string Password { get; set; }
 
             /// <summary>
@@ -105,8 +105,8 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+            [Display(Name = "确认密码")]
+            [Compare("Password", ErrorMessage = "密码和确认密码不匹配。")]
             public string ConfirmPassword { get; set; }
         }
 
@@ -133,13 +133,13 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
                 {
                     if (storedCode != Input.VerificationCode)
                     {
-                        ModelState.AddModelError(string.Empty, "Invalid verification code.");
+                        ModelState.AddModelError(string.Empty, "无效验证码。");
                         return Page();
                     }
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Verification code has expired or is invalid.");
+                    ModelState.AddModelError(string.Empty, "验证码已过期或无效。");
                     return Page();
                 }
 

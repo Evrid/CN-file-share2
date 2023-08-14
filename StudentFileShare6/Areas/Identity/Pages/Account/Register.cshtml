@@ -23,7 +23,8 @@
                 <label asp-for="Input.VerificationCode"></label>
                 <input asp-for="Input.VerificationCode" class="form-control" />
                 <span asp-validation-for="Input.VerificationCode" class="text-danger"></span>
-                <button type="button" id="getCodeBtn">Get Code</button>
+                <button type="button" id="getCodeBtn">获取验证码</button>
+                <span id="timer"></span>
             </div>
 
 
@@ -78,14 +79,40 @@
 
     <script>
         $(document).ready(function () {
+
+        let countdown;
+      
+        let timeLeft = 60; // 60 seconds
+
+
+            function startCountdown() {
+                $("#getCodeBtn").prop('disabled', true); // Disable the button
+                countdown = setInterval(function () {
+                    if (timeLeft <= 0) {
+                        clearInterval(countdown);
+                        $("#timer").text('');
+                        $("#getCodeBtn").prop('disabled', false); // Re-enable the button
+                    } else {
+                        $("#timer").text(`(${timeLeft} 秒之后可重新获取验证码)`);
+                        timeLeft--;
+                    }
+                }, 1000);
+            }
+
+
             $("#getCodeBtn").click(function () {
                 const phoneNumber = $("#Input_PhoneNumber").val();
 
                 if (!phoneNumber) {
                     // Display an appropriate message to the user
-                    alert("Please enter a phone number.");
+                    alert("请输入电话号码。");
                     return;
                 }
+
+                // Start the countdown when the button is clicked
+                timeLeft = 60; // Reset the timer to 60 seconds
+                startCountdown();
+
 
                 $.ajax({
                     url: '/SMS/GenerateCode',
@@ -99,7 +126,7 @@
                         }
                     },
                     error: function () {
-                        alert("Error sending code.");
+                        alert("生成验证码时出错。");
                     }
                 });
             });

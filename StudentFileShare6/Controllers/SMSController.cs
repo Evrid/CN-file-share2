@@ -36,7 +36,7 @@ namespace StudentFileShare6.Controllers
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
                 // Handle error - phone number is required
-                return Json(new { success = false, message = "Phone number is required." });
+                return Json(new { success = false, message = "请填写电话号码。" });
             }
 
             Random random = new Random();
@@ -56,14 +56,14 @@ namespace StudentFileShare6.Controllers
 
             if (isSent)
             {
-                return Json(new { success = true, message = "Code sent successfully!" });
+                return Json(new { success = true, message = "验证码发送成功！" });
 
               
             }
             else
             {
                 // Handle error - maybe the SMS service failed or something else went wrong
-                return Json(new { success = false, message = "Failed to send code. Please try again." });
+                return Json(new { success = false, message = "发送验证码失败。 请再试一次。" });
             }
         }
 
