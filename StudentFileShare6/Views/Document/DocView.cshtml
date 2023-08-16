@@ -7,58 +7,32 @@
 
 }
 
-<h2>University name: @Model.SchoolName</h2>
-<p>Course name: @Model.CourseName</p>
-<p>Document name: @Model.DocumentName</p>
+<h2>大学名称: @Model.SchoolName</h2>
+<p>课程名称：@Model.CourseName</p>
+<p>文件名称: @Model.DocumentName</p>
 @*<p>Document ID: @Model.DocumentID</p>
 *@
+ 
 
+<button id="downloadButton">下载文件</button>
 
-<button id="downloadButton">Download the file</button>
-
-<p>Only the first two pages are displayed, to see the full file please download.</p>
+<p>仅显示前两页，要查看完整文件，请下载。</p>
 
 <div id="pdf-container" style="overflow-y: scroll; height: 600px;"></div>
 @*display the PDF in a scrollable box with the ability to change pages*@
 
 
 
-<p>Likes: <span id="likeCount">@Model.LikeNumber</span></p>
-<p>Dislikes: <span id="dislikeCount">@Model.DislikeNumber</span></p>
+<p>顶： <span id="likeCount">@Model.LikeNumber</span></p>
+<p>踩: <span id="dislikeCount">@Model.DislikeNumber</span></p>
 
-<p>Positive rating percent: <span id="rating">@(Model.Rating)% </span></p>
-
-
-
-<button id="likeButton" onclick="likeDocument('@Model.DocumentID')">Like</button>
-<button id="dislikeButton" onclick="dislikeDocument('@Model.DocumentID')">Dislike</button>
+<p>正面评价百分比： <span id="rating">@(Model.Rating)% </span></p>
 
 
-<div>
-    <p>In the provided code, the following techniques and features are used:</p>
 
-    <p>1. Model: The view is strongly typed with a model class called <code>DocumentViewModel</code>. The model is used to access the properties of the document, such as <code>SchoolName</code>, <code>CourseName</code>, <code>DocumentName</code>, etc.</p>
+<button id="likeButton" onclick="likeDocument('@Model.DocumentID')">顶</button>
+<button id="dislikeButton" onclick="dislikeDocument('@Model.DocumentID')">踩</button>
 
-    <p>2. Razor syntax: Razor syntax is used to embed server-side code within the view. It is denoted by the at sign.</p>
-
-    <p>3. View Data and View Bag: ViewData and ViewBag are used to pass data from the controller to the view. In this case, <code>ViewData["Title"]</code> and <code>ViewBag.Title</code> are used to set the page title.</p>
-
-    <p>4. HTML elements: Various HTML elements such as <code>&lt;h2&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;div&gt;</code>, etc., are used to structure and display the content.</p>
-
-    <p>5. JavaScript: JavaScript code is used to handle the PDF rendering and user interactions on the page. It includes fetching and rendering a PDF using PDF.js library, handling like and dislike actions, updating like and dislike counts asynchronously, setting and getting cookies, and updating the rating percentage.</p>
-
-    <p>6. CSS styling: Inline styles and a <code>&lt;style&gt;</code> tag are used to apply CSS styles to elements on the page. For example, the <code>pdf-container</code> div is styled to have a specific height and scrollable behavior.</p>
-
-    <p>7. External libraries: The PDF.js library is included using external script and stylesheet references. These libraries provide functionality for rendering PDF files in the browser.</p>
-
-    <p>8. AJAX requests: AJAX (Asynchronous JavaScript and XML) requests are made to the server to handle like and dislike actions, canceling likes and dislikes, and updating the like, dislike counts, and rating percentage without refreshing the entire page.</p>
-
-    <p>9. Cookie handling: JavaScript functions are used to set, get, and remove cookies. Cookies are used to remember the user's like and dislike actions and disable the corresponding buttons accordingly.</p>
-
-    <p>It demonstrates my familiarity with technologies such as ASP.NET MVC, Razor syntax, HTML, JavaScript, AJAX, external libraries, CSS, and cookie handling.</p>
-
-
-</div>
 
 
 
