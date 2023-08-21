@@ -1,1 +1,373 @@
-﻿
+﻿@model DocumentViewModel
+
+@{
+    ViewData["Title"] = "DocView";
+
+    ViewBag.Title = Model.DocumentName + "-" + Model.CourseName+"-" + Model.SchoolName;
+
+}
+
+
+<p>课程名称：@Model.CourseName</p>
+<p>文件名称: @Model.DocumentName</p>
+@*<p>Document ID: @Model.DocumentID</p>
+*@
+ 
+
+<button id="downloadButton">下载文件</button>
+
+<p>仅显示前两页，要查看完整文件，请下载。</p>
+
+<div id="pdf-container" style="overflow-y: scroll; height: 600px;"></div>
+@*display the PDF in a scrollable box with the ability to change pages*@
+
+
+
+<p>顶： <span id="likeCount">@Model.LikeNumber</span></p>
+<p>踩: <span id="dislikeCount">@Model.DislikeNumber</span></p>
+
+<p>正面评价百分比： <span id="rating">@(Model.Rating)% </span></p>
+
+
+
+<button id="likeButton" onclick="likeDocument('@Model.DocumentID')">顶</button>
+<button id="dislikeButton" onclick="dislikeDocument('@Model.DocumentID')">踩</button>
+
+
+
+
+<!-- Rest of the view content -->
+<!-- Add the latest PDF.js library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+<!-- Add the PDF.js worker script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js"></script>
+
+<!-- Add the PDF.js viewer stylesheet -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf_viewer.min.css">
+
+@*For like and dislike function*@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get the container element
+        const container = document.getElementById('pdf-container');
+
+        // URL of the PDF file (served over HTTPS)
+        const UrlNeedModify = '@Model.Link';
+      //  var pdfUrl = UrlNeedModify.replace(/amp;/g, '');    //the link we got has extra "amp;", all needs to be removed to work
+
+        var pdfUrl = 'https://publicreadchina.oss-cn-beijing.aliyuncs.com/%E8%B0%83%E8%AF%95%E6%89%8B%E5%86%8C.pdf';
+
+         //const pdfUrl = 'https://studyfilesbucket1.oss-eu-central-1.aliyuncs.com/Principles_ Life and Work579132053.pdf?Expires=4843603152&OSSAccessKeyId=LTAI5tHfC1uRSqRZswqEo5EQ&Signature=2YFYBJEZpZhzWxHlSUv1BRnA9H4%3D';
+     //   console.log(pdfUrl);
+
+        // Set the worker source URL
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+        // Fetch the PDF file
+        fetch(pdfUrl)
+            .then(response => response.blob())
+            .then(blob => {
+                // Create a URL object from the blob
+                const pdfBlobUrl = URL.createObjectURL(blob);
+
+                // Render the PDF file
+                const loadingTask = pdfjsLib.getDocument(pdfBlobUrl);
+                loadingTask.promise.then((pdf) => {
+
+                    const totalNumPages = pdf.numPages;
+                    let numPages;  // Declare numPages variable outside the if-else blocks
+
+                    if (totalNumPages > 9) {
+                        numPages = 9;   // if the document has greater than 2 pages then we only show 2 pages
+                    } else {
+                        numPages = totalNumPages;  // else we show the number of pages it has
+                    }
+
+                            //we only want to display 2 pages of a pdf now, can edit later
+                    console.log("If the document have less page than the number we want to display, then we get error log");
+                    // Render each page sequentially
+                    for (let pageNumber = 1; pageNumber <= numPages; pageNumber++) {
+                        pdf.getPage(pageNumber).then((page) => {
+                            // Create a <canvas> element for each page
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            container.appendChild(canvas);
+
+                            // Set the canvas dimensions to match the page size
+                            const viewport = page.getViewport({ scale: 1 });
+                            canvas.width = viewport.width;
+                            canvas.height = viewport.height;
+
+                            // Render the page content on the canvas
+                            const renderContext = {
+                                canvasContext: context,
+                                viewport: viewport,
+                            };
+                            page.render(renderContext);
+                        });
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Failed to fetch the PDF file:', error);
+            });
+    });
+
+</script>
+
+<script>
+    //a download button that after user click it, it will let user open a link
+    const UrlNeedChange = '@Model.Link';
+    var pdfdownloadUrl = UrlNeedChange.replace(/amp;/g, '');    //the link we got has extra "amp;", all needs to be removed to work
+
+    document.getElementById("downloadButton").addEventListener("click", function() {
+        window.open(pdfdownloadUrl);
+    });
+</script>
+
+
+<style>
+    #pdf-container {
+        width: 100%;
+    }
+
+        #pdf-container canvas {
+            display: block;
+            margin-bottom: 20px;
+            border: 1px solid #ccc; /* Optional: Add a border for visual separation */
+        }
+</style>
+
+
+
+
+@*For like and dislike with cookie feature*@
+
+
+<script>
+ 
+
+    //we first check if the user have liked or disliked, if they liked then disable the dislike button (same thing for if they have disliked)
+    var beginLikeButton = document.getElementById("likeButton");
+    var beginDislikeButton = document.getElementById("dislikeButton");
+    var beginLikedCookie = getCookie("liked_" + '@Model.DocumentID');
+    var beginDislikedCookie = getCookie("disliked_" + '@Model.DocumentID');
+    if (beginLikedCookie) { beginDislikeButton.disabled = true; }
+    if (beginDislikedCookie) { beginLikeButton.disabled = true; }
+
+    function likeDocument(documentId) {
+        var likeButton = document.getElementById("likeButton");
+        var dislikeButton = document.getElementById("dislikeButton");
+
+        var likedCookie = getCookie("liked_" + documentId);
+        var dislikedCookie = getCookie("disliked_" + documentId);
+
+        if (likedCookie) {
+            // User has already liked the document, cancel the action, enable dislike button
+         //   decreaseLikeCount();
+            removeCookie("liked_" + documentId);
+            dislikeButton.disabled = false; // Enable dislike button
+            // Make an AJAX call to the server to update the like count
+            $.ajax({
+                type: "POST",
+                url: "/LikeDislike/CancelLikeDocument",
+                data: { documentId: documentId },
+                success: function (data) {
+                    updateLikeCount(data);
+                    updateRating(documentId);
+                    console.log("Like canceled successfully");
+                },
+                error: function (error) {
+                    console.error("An error occurred while canceling like");
+                }
+            });
+          
+        } else if (dislikedCookie) {
+            // User has previously disliked the document, remove dislike and increase like
+       
+            removeCookie("disliked_" + documentId);
+            setCookie("liked_" + documentId, true);
+
+            // Make an AJAX call to the server to update the like and dislike counts
+            $.ajax({
+                type: "POST",
+                url: "/LikeDislike/ChangeLikeDislikeDocument",
+                data: { documentId: documentId, action: "like" },
+                success: function (data) {
+                    updateLikeCount(data.likes);
+                    updateDislikeCount(data.dislikes);
+                    updateRating(documentId);
+                    console.log("Like count updated successfully");
+                },
+                error: function (error) {
+                    console.error("An error occurred while updating like and dislike counts");
+                }
+            });
+        } else {
+            // User has not liked or disliked the document before
+    
+            setCookie("liked_" + documentId, true);
+            dislikeButton.disabled = true; // Disable dislike button
+
+            // Make an AJAX call to the server to update the like count
+            $.ajax({
+                type: "POST",
+                url: "/LikeDislike/LikeDocument",
+                data: { documentId: documentId },
+                success: function (data) {
+                    updateLikeCount(data);
+                    updateRating(documentId);
+                    console.log("Like count updated successfully");
+                },
+                error: function (error) {
+                    console.error("An error occurred while updating like count");
+                }
+            });
+
+        }
+
+    
+    }
+
+    function dislikeDocument(documentId) {
+        var likeButton = document.getElementById("likeButton");
+        var dislikeButton = document.getElementById("dislikeButton");
+
+        var likedCookie = getCookie("liked_" + documentId);
+        var dislikedCookie = getCookie("disliked_" + documentId);
+
+        if (dislikedCookie) {
+            // User has already disliked the document, cancel the action
+       //     decreaseDislikeCount();
+            removeCookie("disliked_" + documentId);
+             likeButton.disabled = false; // Enable like button
+            // Make an AJAX call to the server to update the dislike count
+            $.ajax({
+                type: "POST",
+                url: "/LikeDislike/CancelDislikeDocument",
+                data: { documentId: documentId },
+                success: function (data) {
+                    updateDislikeCount(data);
+                    updateRating(documentId);
+                    console.log("Dislike canceled successfully");
+                },
+                error: function (error) {
+                    console.error("An error occurred while canceling dislike");
+                }
+            });
+        } else if (likedCookie) {
+            // User has previously liked the document, remove like and increase dislike
+      
+            removeCookie("liked_" + documentId);
+            setCookie("disliked_" + documentId, true);
+
+            // Make an AJAX call to the server to update the like and dislike counts
+            $.ajax({
+                type: "POST",
+                url: "/LikeDislike/ChangeLikeDislikeDocument",
+                data: { documentId: documentId, action: "dislike" },
+                success: function (data) {
+                    updateLikeCount(data.likes);
+                    updateDislikeCount(data.dislikes);
+                    updateRating(documentId);
+                    console.log("Dislike count updated successfully");
+                },
+                error: function (error) {
+                    console.error("An error occurred while updating like and dislike counts");
+                }
+            });
+        } else {
+            // User has not liked or disliked the document before
+     
+            setCookie("disliked_" + documentId, true);
+            likeButton.disabled = true; // Disable like button
+            // Make an AJAX call to the server to update the dislike count
+            $.ajax({
+                type: "POST",
+                url: "/LikeDislike/DislikeDocument",
+                data: { documentId: documentId },
+                success: function (data) {
+                    updateDislikeCount(data);
+                    updateRating(documentId);
+                    console.log("Dislike count updated successfully");
+                },
+                error: function (error) {
+                    console.error("An error occurred while updating dislike count");
+                }
+            });
+        }
+
+   
+    }
+
+
+
+    function updateLikeCount(count) {
+        var likeCountElement = document.getElementById("likeCount");
+        likeCountElement.innerText = count;
+     }
+
+    function updateDislikeCount(count) {
+        var dislikeCountElement = document.getElementById("dislikeCount");
+        dislikeCountElement.innerText = count;
+  
+    }
+
+    function setCookie(name, value) {
+        document.cookie = name + "=" + value + "; path=/";
+    }
+
+    function getCookie(name) {
+        var cookies = document.cookie.split("; ");
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].split("=");
+            if (cookie[0] === name) {
+                return cookie[1];
+            }
+        }
+        return "";
+    }
+
+    function removeCookie(name) {
+        document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
+
+
+
+    function updateRating(documentId) {
+        $.ajax({
+            type: "POST",
+            url: "/LikeDislike/GetRating",
+            data: { documentId: documentId },
+            success: function (result) {
+                $('#rating').text(parseFloat(result));
+               
+                var RatingElement = document.getElementById("rating");
+                RatingElement.innerText = parseFloat(result)+"%";
+              // $('#rating').text(likeCount.toFixed(2) + "%");
+                //`${parseFloat(result)}%`
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+          
+    }
+        });
+    }
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
