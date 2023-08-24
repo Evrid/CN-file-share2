@@ -39,7 +39,7 @@
 
         <div id="searchResultsSection" style="display: none;">
             <h2>搜索结果</h2>
-            <table class="table">
+            <table class="table" style="border: 1px solid black;">
                 <thead>
                     <tr>
                         <th>名称和预览</th>
@@ -54,6 +54,7 @@
                     <!-- 搜索结果将动态添加在这里 -->
                 </tbody>
             </table>
+
         </div>
     </div>
 
@@ -313,8 +314,10 @@
                         // Display search results
                         searchResults.forEach(function (result) {
                             var row = document.createElement("tr");
+                                    row.classList.add("border-cell");
 
                             var nameCell = document.createElement("td");
+                                    nameCell.classList.add("border-cell");
                             var link = document.createElement("a");
                             link.href = "/Document/docview/" + result.universityName + "/" + result.courseName + "/" + result.name + "/" + result.documentID;
                             link.textContent = result.name;
@@ -330,14 +333,15 @@
 
 
 
-                                var nameCell = document.createElement("td");
+                                var courseCell = document.createElement("td");
+                                        courseCell.classList.add("border-cell");
                             var link = document.createElement("a");
                                 link.href = "/Course/Courseview/?schoolName=" + result.universityName + "&courseName=" + result.courseName+"&courseID=" + result.courseID;
                             link.textContent = result.courseName;
                               link.target = "_blank"; // This line makes the link open in a new tab
-                            nameCell.appendChild(link);
-                            nameCell.classList.add("hyperlink"); // Add a CSS class for styling if desired
-                            row.appendChild(nameCell);
+                            courseCell.appendChild(link);
+                            courseCell.classList.add("hyperlink"); // Add a CSS class for styling if desired
+                            row.appendChild(courseCell);
 
 
 
@@ -381,10 +385,12 @@
 
 
                             var yearCell = document.createElement("td");
+                                    yearCell.classList.add("border-cell");
                             yearCell.textContent = result.year;
                             row.appendChild(yearCell);
 
                             var categoryCell = document.createElement("td");
+                                    categoryCell.classList.add("border-cell");
                             var categoryValue = result.category;
 
                                 switch (categoryValue) {
@@ -422,10 +428,12 @@
 
 
                             var descriptionCell = document.createElement("td");
+                                    descriptionCell.classList.add("border-cell");
                             descriptionCell.textContent = result.description;
                             row.appendChild(descriptionCell);
 
                             var ratingCell = document.createElement("td");
+                                    ratingCell.classList.add("border-cell");
                             if (result.rating == null) {
                                 ratingCell.textContent = "none"
                             } else {
@@ -449,6 +457,7 @@
                 });
             }
         });
+
 
 
     </script>

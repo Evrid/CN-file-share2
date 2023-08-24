@@ -4,20 +4,20 @@
     ViewData["Title"] = "CourseView";
 }
 
-<h2>@Model.SchoolName</h2>
-<p>@Model.CourseName</p>
 
+<h1>@Model.CourseName</h1>
+<h2>@Model.SchoolName</h2>
 
 <table style="border-collapse: collapse; width: 100%;">
     <thead>
         <tr>
-            <th style="border: 1px solid black;">图片</th>
-            <th style="border: 1px solid black;">名称</th>
-            <th style="border: 1px solid black;">课程</th>
-            <th style="border: 1px solid black;">年份</th>
-            <th style="border: 1px solid black;">类别</th>
-            <th style="border: 1px solid black;">描述</th>
-            <th style="border: 1px solid black;">评分</th>
+            <th class="border-cell">图片</th>
+            <th class="border-cell">名称</th>
+            <th class="border-cell">课程</th>
+            <th class="border-cell">年份</th>
+            <th class="border-cell">类别</th>
+            <th class="border-cell">描述</th>
+            <th class="border-cell">评分</th>
             <!-- Add other document properties as needed -->
         </tr>
     </thead>
@@ -25,22 +25,21 @@
         @foreach (var document in Model.Documents)
         {
             var imageURL = (document.FirstPageImageLink ?? "").Replace("http:", "https:");
-            <tr style="border: 1px solid black;">
-                <td style="border: 1px solid black;"><img src="@imageURL" style="width: 200px; height: auto;" /></td>
-                <td style="border: 1px solid black;">
+            <tr>
+                <td class="border-cell"><img src="@imageURL" style="width: 200px; height: auto;" /></td>
+                <td class="border-cell">
                     <a href="/Document/docview/@Model.SchoolName/@Model.CourseName/@document.Name/@document.DocumentID" target="_blank">
                         @document.Name
                     </a>
                 </td>
-
-
-                <td style="border: 1px solid black;">@Model.CourseName</td>
-                <td style="border: 1px solid black;">@document.Year</td>
-                <td style="border: 1px solid black;">@document.Category</td>
-                <td style="border: 1px solid black;">@document.Description</td>
-                <td style="border: 1px solid black;">@document.Rating</td>
+                <td class="border-cell">@Model.CourseName</td>
+                <td class="border-cell">@document.Year</td>
+                <td class="border-cell">@document.Category</td>
+                <td class="border-cell">@document.Description</td>
+                <td class="border-cell">@document.Rating</td>
                 <!-- Add other document properties as needed -->
             </tr>
         }
     </tbody>
 </table>
+

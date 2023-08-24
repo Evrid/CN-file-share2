@@ -25,3 +25,7 @@ body {
     width: 0%;
     transition: width 0.3s ease-in-out;
 }
+
+.border-cell {
+    border: 1px solid black;
+}
