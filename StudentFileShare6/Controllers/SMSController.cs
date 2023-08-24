@@ -53,13 +53,14 @@ namespace StudentFileShare6.Controllers
 
             System.Diagnostics.Debug.WriteLine(phoneNumber);
             System.Diagnostics.Debug.WriteLine(code);
-            ViewBag.Code = code;
+            
 
             if (isSent)
             {
 
             
                 return Json(new { success = true, message = "验证码发送成功！" + code });
+                //we display the code to the user, disable later use SMS API
                
 
             }
