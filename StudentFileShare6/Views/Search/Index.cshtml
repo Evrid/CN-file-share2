@@ -43,6 +43,7 @@
                 <thead>
                     <tr>
                         <th>名称和预览</th>
+                        <th>课程</th>
                         <th>年份</th>
                         <th>类别</th>
                         <th>描述</th>
@@ -317,11 +318,26 @@
                             var link = document.createElement("a");
                             link.href = "/Document/docview/" + result.universityName + "/" + result.courseName + "/" + result.name + "/" + result.documentID;
                             link.textContent = result.name;
+                            
+                              link.target = "_blank"; // This line makes the link open in a new tab
+ 
+
                             nameCell.appendChild(link);
                             nameCell.classList.add("hyperlink"); // Add a CSS class for styling if desired
                             row.appendChild(nameCell);
 
 
+
+
+
+                                var nameCell = document.createElement("td");
+                            var link = document.createElement("a");
+                                link.href = "/Course/Courseview/?schoolName=" + result.universityName + "&courseName=" + result.courseName+"&courseID=" + result.courseID;
+                            link.textContent = result.courseName;
+                              link.target = "_blank"; // This line makes the link open in a new tab
+                            nameCell.appendChild(link);
+                            nameCell.classList.add("hyperlink"); // Add a CSS class for styling if desired
+                            row.appendChild(nameCell);
 
 
 

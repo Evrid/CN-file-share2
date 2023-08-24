@@ -7,17 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StudentFileShare6.Models;
 using NPinyin;
-
+using Microsoft.CodeAnalysis;
+using StudentFileShare6.data;
 
 namespace StudentFileShare6.Controllers
 {
     public class CourseController : Controller
     {
         private readonly CourseContext _context;
+        private readonly DocumentContext _docContext;
 
-        public CourseController(CourseContext context)
+        public CourseController(CourseContext context, DocumentContext docContext)
         {
             _context = context;
+            _docContext= docContext;
         }
 
         // GET: Course
@@ -205,5 +208,24 @@ namespace StudentFileShare6.Controllers
            //after upload complete we show this
             return View();
         }
+
+        public async Task<IActionResult> CourseView(string schoolName, string courseName, string courseID)
+        {
+            //to have own page for each course with a website template showing schoolName, courseName
+            //example link:  https://localhost:7192/Course/CourseView?schoolName=ABCSchool&courseName=Mathematics&CourseID=A123
+
+            var documentsOfTheCourse = await _docContext.Document.Where(d => d.CourseID == courseID).ToListAsync();
+
+            var model = new CourseViewModel
+            {
+                SchoolName = schoolName,
+                CourseName = courseName,
+                CourseID = courseID,
+                Documents = documentsOfTheCourse
+            };
+
+            return View(model);
+        }
+
     }
 }
