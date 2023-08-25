@@ -8,17 +8,19 @@ using Microsoft.EntityFrameworkCore;
 using StudentFileShare6.data;
 using System.Text.RegularExpressions;
 using NPinyin;
-
+using StudentFileShare6.Models;
 
 namespace StudentFileShare6.Controllers
 {
     public class UniversityController : Controller
     {
         private readonly UniversityContext _context;
+        private readonly CourseContext _courseContext;
 
-        public UniversityController(UniversityContext context)
+        public UniversityController(UniversityContext context, CourseContext courseContext)
         {
             _context = context;
+            _courseContext = courseContext;
         }
 
         // GET: University
@@ -259,5 +261,24 @@ namespace StudentFileShare6.Controllers
             //after upload complete we show this
             return View();
         }
+
+        public async Task<IActionResult> UniversityView(string schoolID, string schoolName, string schoolLocation)
+        {
+            //to have own page for each course with a website template showing schoolName, courseName
+            //example link:  https://localhost:7192/University/UniversityView/?schoolID=2348shsh&schoolName=%E4%B8%8A%E6%B5%B7%E5%A4%A7%E5%AD%A6&schoolLocation=%E4%B8%8A%E6%B5%B7
+
+            var courseOfTheUniversity = await _courseContext.Course.Where(d => d.SchoolID == schoolID).ToListAsync();
+
+            var model = new UniversityViewModel
+            {
+                SchoolID = schoolID,
+                Name = schoolName,
+                Location = schoolLocation,
+                Courses = courseOfTheUniversity
+            };
+
+            return View(model);
+        }
+
     }
 }

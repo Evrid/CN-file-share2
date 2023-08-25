@@ -42,12 +42,13 @@
             <table class="table" style="border: 1px solid black;">
                 <thead>
                     <tr>
-                        <th>名称和预览</th>
-                        <th>课程</th>
-                        <th>年份</th>
-                        <th>类别</th>
-                        <th>描述</th>
-                        <th>评分</th>
+                        <th class="border-cell">名称和预览</th>
+                        <th class="border-cell">课程</th>
+                        <th class="border-cell">大学</th> 
+                        <th class="border-cell">年份</th>
+                        <th class="border-cell">类别</th>
+                        <th class="border-cell">描述</th>
+                        <th class="border-cell">评分</th>
                     </tr>
                 </thead>
                 <tbody id="searchResultsBody">
@@ -346,8 +347,22 @@
 
 
 
-                      
-                                                        var image = document.createElement("img");
+
+                                var universityCell = document.createElement("td");
+                                universityCell.classList.add("border-cell");
+                                var link = document.createElement("a");
+                                link.href = "/University/UniversityView/?schoolID=" + result.schoolID + "&schoolName=" + result.universityName + "&schoolLocation=" + result.universityLocation;
+                                link.textContent = result.universityName;
+                                console.log(result);
+                                link.target = "_blank"; // This line makes the link open in a new tab
+                                universityCell.appendChild(link);
+                                universityCell.classList.add("hyperlink"); // Add a CSS class for styling if desired
+                                row.appendChild(universityCell);
+
+
+
+
+                                var image = document.createElement("img");
                                                         var originalLink = result.firstPageImageLink;
                                                         var imageURL = originalLink.replace(/^http:/, 'https:');   //we must use it because we need all https link, otherwise won't work
 

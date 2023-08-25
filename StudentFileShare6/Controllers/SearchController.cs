@@ -45,6 +45,7 @@ namespace StudentFileShare6.Controllers
         d.DocumentID,
         CourseName = d.Course.CourseName, // Include only CourseName and assign it to Name property
         UniversityName=d.University.Name,   //cannot use     .Include(d => d.University)    because won't work in Json
+        UniversityLocation= d.University.Location,
         d.SchoolID,
         d.CourseID,
         d.Year,

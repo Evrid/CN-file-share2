@@ -1,0 +1,35 @@
+﻿
+
+@model UniversityViewModel
+
+@{
+    ViewData["Title"] = "UniversityView";
+}
+
+<h1>@Model.Name</h1>
+<h2>@Model.Location</h2>
+<p>课程列表</p>
+
+<table>
+    <thead>
+        <tr>
+            <th class="border-cell">课程名称</th>
+            <th class="border-cell">课程 ID</th>
+            <!-- Add other document properties as needed -->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in Model.Courses)
+        {
+            <tr>
+                <td class="border-cell">
+                    <a href="@String.Format("/Course/Courseview/?schoolName={0}&courseName={1}&courseID={2}", @Model.Name, course.CourseName, course.CourseID)" target="_blank">
+                        @course.CourseName
+                    </a>
+                </td>
+                <td class="border-cell">@course.CourseID</td>
+                <!-- Add other document properties as needed -->
+            </tr>
+        }
+    </tbody>
+</table>
