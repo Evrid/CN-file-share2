@@ -37,6 +37,10 @@ namespace StudentFileShare6.Models
 
         public University? University { get; set; }
         public Course? Course { get; set; }
+
+
+        public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
+
         [NotMapped]
         public List<FileUploadProgress>? FileUploadProgresses { get; set; }   //to show upload percentage
 

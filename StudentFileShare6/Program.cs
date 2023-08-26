@@ -29,7 +29,8 @@ builder.Services.AddDbContext<DocumentContext>(options =>
 builder.Services.AddDbContext<UniversityContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))); // Use ServerVersion.AutoDetect()
 
-
+builder.Services.AddDbContext<UserSavedInfoContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))); // Use ServerVersion.AutoDetect()
 
 //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 //    .AddEntityFrameworkStores<ApplicationDatabaseConnection>();

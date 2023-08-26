@@ -34,6 +34,8 @@ public class CourseContext : DbContext
             .WithMany(u => u.Courses)
             .HasForeignKey(c => c.SchoolID)
             .HasPrincipalKey(u => u.SchoolID);
+
+
     }
 }
 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentFileShare6.data;
 
@@ -10,9 +11,11 @@ using StudentFileShare6.data;
 namespace StudentFileShare6.Migrations
 {
     [DbContext(typeof(UniversityContext))]
-    partial class UniversityContextModelSnapshot : ModelSnapshot
+    [Migration("20230826072056_test11")]
+    partial class test11
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,48 +105,6 @@ namespace StudentFileShare6.Migrations
                     b.ToTable("Document");
                 });
 
-            modelBuilder.Entity("StudentFileShare6.Models.UserSavedInfo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("CourseID")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("CourseName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("DocumentID")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("DocumentName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("SchoolID")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("SchoolName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("UniversitySchoolID")
-                        .HasColumnType("varchar(128)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourseID");
-
-                    b.HasIndex("DocumentID");
-
-                    b.HasIndex("UniversitySchoolID");
-
-                    b.ToTable("UserSavedInfo");
-                });
-
             modelBuilder.Entity("University", b =>
                 {
                     b.Property<string>("SchoolID")
@@ -191,37 +152,9 @@ namespace StudentFileShare6.Migrations
                     b.Navigation("University");
                 });
 
-            modelBuilder.Entity("StudentFileShare6.Models.UserSavedInfo", b =>
-                {
-                    b.HasOne("StudentFileShare6.Models.Course", "Course")
-                        .WithMany("UserSavedInfos")
-                        .HasForeignKey("CourseID");
-
-                    b.HasOne("StudentFileShare6.Models.Document", "Document")
-                        .WithMany("UserSavedInfos")
-                        .HasForeignKey("DocumentID");
-
-                    b.HasOne("University", "University")
-                        .WithMany("UserSavedInfos")
-                        .HasForeignKey("UniversitySchoolID");
-
-                    b.Navigation("Course");
-
-                    b.Navigation("Document");
-
-                    b.Navigation("University");
-                });
-
             modelBuilder.Entity("StudentFileShare6.Models.Course", b =>
                 {
                     b.Navigation("Documents");
-
-                    b.Navigation("UserSavedInfos");
-                });
-
-            modelBuilder.Entity("StudentFileShare6.Models.Document", b =>
-                {
-                    b.Navigation("UserSavedInfos");
                 });
 
             modelBuilder.Entity("University", b =>
@@ -229,8 +162,6 @@ namespace StudentFileShare6.Migrations
                     b.Navigation("Courses");
 
                     b.Navigation("Documents");
-
-                    b.Navigation("UserSavedInfos");
                 });
 #pragma warning restore 612, 618
         }

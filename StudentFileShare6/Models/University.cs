@@ -1,4 +1,5 @@
-﻿using StudentFileShare6.data;
+﻿using Microsoft.EntityFrameworkCore;
+using StudentFileShare6.data;
 using StudentFileShare6.Models;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ public class University
     public List<Course>? Courses { get; set; }  //list of courses offered by a school
     public List<Document>? Documents { get; set; }   //list of documents offered by a school
     //By adding the ? after the list type (List<Course>? and List<Document>?), we indicate that these properties can be nullable, thus satisfying the validation requirements.
+
+    public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
 
     public void GenerateRandomSchoolID(UniversityContext context)
     {
