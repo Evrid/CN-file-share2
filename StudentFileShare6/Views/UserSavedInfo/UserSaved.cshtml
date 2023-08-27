@@ -1,5 +1,4 @@
-﻿@model IEnumerable<StudentFileShare6.Models.UserSavedInfo>
-
+﻿ @model IEnumerable<StudentFileShare6.Models.UserSavedInfo>
 
 <h1>收藏夹</h1>
 
@@ -7,18 +6,18 @@
     <thead>
         <tr>
             <th>课程名</th>
-            
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            @if (item.CourseName != null)
+            @if (item.CourseID != null)
             {
                 <tr>
-                    <td>@item.CourseName</td>
-               
-            </tr>
+                    <td class="hyperlink">
+                        <a href="/Course/Courseview/?schoolName=@item.SchoolName&courseName=@item.CourseName&courseID=@item.CourseID" target="_blank">@item.CourseName</a>
+                    </td>
+                </tr>
             }
         }
     </tbody>
@@ -26,18 +25,18 @@
     <thead>
         <tr>
             <th>大学名</th>
-
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            @if (item.SchoolName != null)
+            @if (item.SchoolID != null)
             {
                 <tr>
-                    <td>@item.SchoolName</td>
-
-            </tr>
+                    <td class="hyperlink">
+                        <a href="/University/UniversityView/?schoolID=@item.SchoolID&schoolName=@item.SchoolName&schoolLocation=@item.University.Location" target="_blank">@item.SchoolName</a>
+                    </td>
+                </tr>
             }
         }
     </tbody>
@@ -45,20 +44,19 @@
     <thead>
         <tr>
             <th>文件名</th>
-
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            @if (item.DocumentName!=null)
+            @if (item.DocumentID != null)
             {
-            <tr>
-                <td>@item.DocumentName</td>
-
-            </tr>
+                <tr>
+                    <td class="hyperlink">
+                        <a href="/Document/docview/@item.SchoolName/@item.CourseName/@item.DocumentName/@item.DocumentID" target="_blank">@item.DocumentName</a>
+                    </td>
+                </tr>
             }
         }
     </tbody>
-
 </table>

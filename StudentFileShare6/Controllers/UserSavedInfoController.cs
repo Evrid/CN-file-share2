@@ -37,16 +37,7 @@ namespace StudentFileShare6.Controllers
                 .ToListAsync();
 
 
-            // Group by CourseName, DocumentName, and SchoolName
-            var groupedByCourseName = userSavedInfo.Where(x => x.Course != null).Select(x => x.Course.CourseName).Distinct();
-            var groupedByDocumentName = userSavedInfo.Where(x => x.Document != null).Select(x => x.Document.Name).Distinct();
-            var groupedBySchoolName = userSavedInfo.Where(x => x.University != null).Select(x => x.University.Name).Distinct();
-
-            // Use ViewBag to pass the data to the view
-            ViewBag.GroupedByCourseName = String.Join("，", groupedByCourseName);
-            ViewBag.GroupedByDocumentName = String.Join("，", groupedByDocumentName);
-            ViewBag.GroupedBySchoolName = String.Join("，", groupedBySchoolName);
-
+         
 
 
             return View(userSavedInfo);
@@ -66,10 +57,12 @@ namespace StudentFileShare6.Controllers
             if (existingSavedCourse != null)
             {
                 // Course is already saved
-                return Json(new { success = false, message = "课程已保存" });
+                return Json(new { success = false, message = "课程已收藏" });
             }
 
             var courseToSave = await _courseContext.Course
+                .Include(d => d.Universities)
+                
                 .Where(c => c.CourseID == courseId)
                 .FirstOrDefaultAsync();
 
@@ -83,13 +76,14 @@ namespace StudentFileShare6.Controllers
             {
                 UserId = userId,
                 CourseID = courseToSave.CourseID,
-                CourseName = courseToSave.CourseName
+                CourseName = courseToSave.CourseName,
+                SchoolName = courseToSave.Universities.Name
             };
 
             _context.UserSavedInfo.Add(userSavedInfo);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = false, message = "课程保存成功" });
+            return Json(new { success = false, message = "课程收藏成功" });
         }
 
 
@@ -107,10 +101,11 @@ namespace StudentFileShare6.Controllers
             if (existingSavedUniversity != null)
             {
                 // Course is already saved
-                return Json(new { success = false, message = "大学已保存" });
+                return Json(new { success = false, message = "大学已收藏" });
             }
 
             var universityToSave = await _universityContext.Universities
+              
                 .Where(c => c.SchoolID == universityId)
                 .FirstOrDefaultAsync();
 
@@ -130,7 +125,7 @@ namespace StudentFileShare6.Controllers
             _context.UserSavedInfo.Add(userSavedInfo);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = false, message = "大学保存成功" });
+            return Json(new { success = false, message = "大学收藏成功" });
         }
 
 
@@ -147,10 +142,12 @@ namespace StudentFileShare6.Controllers
             if (existingSavedDocument != null)
             {
                 // Document is already saved
-                return Json(new { success = false, message = "文档已保存" });
+                return Json(new { success = false, message = "文档已收藏" });
             }
 
             var documentToSave = await _documentContext.Document
+                .Include(d => d.University)
+                .Include(d => d.Course)
                 .Where(d => d.DocumentID == documentId)
                 .FirstOrDefaultAsync();
 
@@ -164,13 +161,16 @@ namespace StudentFileShare6.Controllers
             {
                 UserId = userId,
                 DocumentID = documentToSave.DocumentID,
-                DocumentName = documentToSave.Name
+                DocumentName = documentToSave.Name,
+                SchoolName=documentToSave.University.Name,
+                CourseName=documentToSave.Course.CourseName
+                
             };
 
             _context.UserSavedInfo.Add(userSavedInfo);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true, message = "文档保存成功" });
+            return Json(new { success = true, message = "文档收藏成功" });
         }
 
     }
