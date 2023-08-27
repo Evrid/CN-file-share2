@@ -18,7 +18,9 @@ public class University
     public List<Document>? Documents { get; set; }   //list of documents offered by a school
     //By adding the ? after the list type (List<Course>? and List<Document>?), we indicate that these properties can be nullable, thus satisfying the validation requirements.
 
-    public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
+    //public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
+
+    public ICollection<UserSavedInfo> UserSavedInfos { get; set; }
 
     public void GenerateRandomSchoolID(UniversityContext context)
     {

@@ -20,7 +20,9 @@ namespace StudentFileShare6.Models
         public List<Document>? Documents { get; set; }   //nullable
 
 
-        public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
+      //  public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
+
+        public ICollection<UserSavedInfo> UserSavedInfos { get; set; }
 
         // public void GenerateRandomCourseID(DbContextOptions<CourseContext> options)
         public void GenerateRandomCourseID(CourseContext context)

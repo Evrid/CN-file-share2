@@ -25,19 +25,19 @@ namespace StudentFileShare6.Controllers
             _documentContext = documentContext;
         }
 
-        //public async Task<IActionResult> UserSaved()
-        //{
-        //    var userId = _userManager.GetUserId(User);  // Get current logged-in user's id
+        public async Task<IActionResult> UserSaved()
+        {
+            var userId = _userManager.GetUserId(User);  // Get current logged-in user's id
 
-        //    var userSavedInfo = await _context.UserSavedInfo
-        //        .Where(u => u.UserId == userId)
-        //        .Include(u => u.Course)
-        //        .Include(u => u.Document)
-        //        .Include(u => u.University)
-        //        .ToListAsync();
+            var userSavedInfo = await _context.UserSavedInfo
+                .Where(u => u.UserId == userId)
+                .Include(u => u.Course)
+                .Include(u => u.Document)
+                .Include(u => u.University)
+                .ToListAsync();
 
-        //    return View(userSavedInfo);
-        //}
+            return View(userSavedInfo);
+        }
 
 
         [HttpPost]

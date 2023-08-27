@@ -6,9 +6,18 @@
 <ul class="navbar-nav">
     @if (SignInManager.IsSignedIn(User))
     {
+
+        <!-- Add this li to redirect to UserSaved() method of UserSavedInfoController -->
+        <li class="nav-item">
+            <a id="userSaved" class="nav-link text-dark" asp-controller="UserSavedInfo" asp-action="UserSaved" title="User Saved Info">我的收藏</a>
+        </li>
+
         <li class="nav-item">
             <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="管理">你好，@UserManager.GetUserName(User)！</a>
         </li>
+
+     
+
         <li class="nav-item">
             <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
                 <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">退出登录</button>
