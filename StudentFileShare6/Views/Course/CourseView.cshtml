@@ -8,6 +8,15 @@
 <h1>@Model.CourseName</h1>
 <h2>@Model.SchoolName</h2>
 
+
+@*<form asp-action="SaveCourse" asp-controller="UserSavedInfo" method="post">
+    <input type="hidden" name="courseId" value="@Model.CourseID" />
+    <input type="submit" value="Save Course" />
+</form>
+*@
+
+<button id="saveCourseBtn">Save Course</button>
+
 <table style="border-collapse: collapse; width: 100%;">
     <thead>
         <tr>
@@ -43,3 +52,24 @@
     </tbody>
 </table>
 
+
+@section Scripts {
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $("#saveCourseBtn").click(function () {
+            $.ajax({
+                url: '@Url.Action("SaveCourse", "UserSavedInfo")',
+                type: 'POST',
+                data: { courseId: '@Model.CourseID' },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        });
+    </script>
+}

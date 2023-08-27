@@ -10,7 +10,7 @@ namespace StudentFileShare6.data
         {
         }
 
-        public DbSet<UserSavedInfo> UserSavedInfos { get; set; }
+        public DbSet<UserSavedInfo> UserSavedInfo { get; set; }
     //    public DbSet<Course> Courses { get; set; }  // Add this if Courses are also managed in this context
 
 
