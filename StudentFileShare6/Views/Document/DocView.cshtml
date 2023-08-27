@@ -13,6 +13,9 @@
 @*<p>Document ID: @Model.DocumentID</p>
 *@
  
+<button id="saveDocumentBtn">收藏文件</button>
+
+
 
 <button id="downloadButton">下载文件</button>
 
@@ -359,7 +362,20 @@
 
 </script>
 
+<script>
 
+    // New code to save a document
+    $("#saveDocumentBtn").click(function () {
+        $.ajax({
+            url: '@Url.Action("SaveDocument", "UserSavedInfo")',
+            type: 'POST',
+            data: { documentId: '@Model.DocumentID' },
+            success: function (response) {
+                alert(response.message);
+            }
+        });
+    });
+</script>
 
 
 
