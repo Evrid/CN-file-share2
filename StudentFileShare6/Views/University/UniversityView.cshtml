@@ -6,9 +6,13 @@
     ViewData["Title"] = "UniversityView";
 }
 
+
 <h1>@Model.Name</h1>
 <h2>@Model.Location</h2>
 <p>课程列表</p>
+
+
+<button id="saveUniversityBtn">收藏大学</button>
 
 <table>
     <thead>
@@ -33,3 +37,26 @@
         }
     </tbody>
 </table>
+
+
+            
+@section Scripts {
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $("#saveUniversityBtn").click(function () {
+            $.ajax({
+                url: '@Url.Action("SaveUniversity", "UserSavedInfo")',
+                type: 'POST',
+                data: { universityId: '@Model.SchoolID' },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        });
+    </script>
+}

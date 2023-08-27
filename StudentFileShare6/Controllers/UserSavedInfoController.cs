@@ -13,12 +13,14 @@ namespace StudentFileShare6.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly UserSavedInfoContext _context;
         private readonly CourseContext _courseContext;
+        private readonly UniversityContext _universityContext;
 
-        public UserSavedInfoController(UserManager<IdentityUser> userManager, UserSavedInfoContext context, CourseContext courseContext)
+        public UserSavedInfoController(UserManager<IdentityUser> userManager, UserSavedInfoContext context, CourseContext courseContext, UniversityContext universityContext)
         {
             _userManager = userManager;
             _context = context;
             _courseContext = courseContext;
+            _universityContext = universityContext;
         }
 
         //public async Task<IActionResult> UserSaved()
@@ -75,5 +77,45 @@ namespace StudentFileShare6.Controllers
             return Json(new { success = false, message = "Course saved" });
         }
 
+
+
+        [HttpPost]
+        public async Task<IActionResult> SaveUniversity(string universityId)
+        {
+            var userId = _userManager.GetUserId(User);  // Get current logged-in user's id
+
+            // First, check if the course is already saved by the user
+            var existingSavedUniversity = await _context.UserSavedInfo
+                .Where(u => u.UserId == userId && u.SchoolID == universityId)
+                .FirstOrDefaultAsync();
+
+            if (existingSavedUniversity != null)
+            {
+                // Course is already saved
+                return Json(new { success = false, message = "University already saved" });
+            }
+
+            var universityToSave = await _universityContext.Universities
+                .Where(c => c.SchoolID == universityId)
+                .FirstOrDefaultAsync();
+
+            if (universityToSave == null)
+            {
+                // Course not found
+                return Json(new { success = false, message = "University not found" });
+            }
+
+            var userSavedInfo = new UserSavedInfo
+            {
+                UserId = userId,
+                SchoolID = universityToSave.SchoolID,
+                SchoolName = universityToSave.Name
+            };
+
+            _context.UserSavedInfo.Add(userSavedInfo);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = false, message = "University saved" });
+        }
     }
 }
