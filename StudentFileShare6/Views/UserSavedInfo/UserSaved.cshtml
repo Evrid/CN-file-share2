@@ -1,23 +1,64 @@
 ﻿@model IEnumerable<StudentFileShare6.Models.UserSavedInfo>
 
+
 <h1>收藏夹</h1>
 
 <table class="table">
     <thead>
         <tr>
             <th>课程名</th>
-            <th>文件名</th>
-            <th>学校名</th>
+            
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>@item.CourseName</td>
-                <td>@item.DocumentName</td>
-                <td>@item.SchoolName</td>
+            @if (item.CourseName != null)
+            {
+                <tr>
+                    <td>@item.CourseName</td>
+               
             </tr>
+            }
         }
     </tbody>
+
+    <thead>
+        <tr>
+            <th>大学名</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            @if (item.SchoolName != null)
+            {
+                <tr>
+                    <td>@item.SchoolName</td>
+
+            </tr>
+            }
+        }
+    </tbody>
+
+    <thead>
+        <tr>
+            <th>文件名</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            @if (item.DocumentName!=null)
+            {
+            <tr>
+                <td>@item.DocumentName</td>
+
+            </tr>
+            }
+        }
+    </tbody>
+
 </table>

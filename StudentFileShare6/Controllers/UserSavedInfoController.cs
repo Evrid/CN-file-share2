@@ -36,6 +36,19 @@ namespace StudentFileShare6.Controllers
                 .Include(u => u.University)
                 .ToListAsync();
 
+
+            // Group by CourseName, DocumentName, and SchoolName
+            var groupedByCourseName = userSavedInfo.Where(x => x.Course != null).Select(x => x.Course.CourseName).Distinct();
+            var groupedByDocumentName = userSavedInfo.Where(x => x.Document != null).Select(x => x.Document.Name).Distinct();
+            var groupedBySchoolName = userSavedInfo.Where(x => x.University != null).Select(x => x.University.Name).Distinct();
+
+            // Use ViewBag to pass the data to the view
+            ViewBag.GroupedByCourseName = String.Join("，", groupedByCourseName);
+            ViewBag.GroupedByDocumentName = String.Join("，", groupedByDocumentName);
+            ViewBag.GroupedBySchoolName = String.Join("，", groupedBySchoolName);
+
+
+
             return View(userSavedInfo);
         }
 
