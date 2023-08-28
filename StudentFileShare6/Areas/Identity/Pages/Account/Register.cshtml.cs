@@ -152,6 +152,8 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
                 await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
                 await _emailStore.SetEmailAsync(user, null, CancellationToken.None);   //was Input.Email instead of null
                 var result = await _userManager.CreateAsync(user, Input.Password);
+                //here is the password validated
+
 
                 if (result.Succeeded)
                 {
