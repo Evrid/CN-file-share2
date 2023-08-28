@@ -3,55 +3,399 @@
 @{
     ViewData["Title"] = "DocView";
 
-    ViewBag.Title = Model.DocumentName + "-" + Model.CourseName+"-" + Model.SchoolName;
+    ViewBag.Title = Model.DocumentName + "-" + Model.CourseName + "-" + Model.SchoolName;
 
 }
-
-<h2>大学名称: @Model.SchoolName</h2>
-<p>课程名称：@Model.CourseName</p>
-<p>文件名称: @Model.DocumentName</p>
-@*<p>Document ID: @Model.DocumentID</p>
-*@
- 
-<button id="saveDocumentBtn">收藏文件</button>
-
-
-
-<button id="downloadButton">下载文件</button>
-
-<p>仅显示前两页，要查看完整文件，请下载。</p>
-
-<div id="pdf-container" style="overflow-y: scroll; height: 600px;"></div>
-@*display the PDF in a scrollable box with the ability to change pages*@
-
-
-
-<p>顶： <span id="likeCount">@Model.LikeNumber</span></p>
-<p>踩: <span id="dislikeCount">@Model.DislikeNumber</span></p>
-
-<p>正面评价百分比： <span id="rating">@(Model.Rating)% </span></p>
-
-
-
-<button id="likeButton" onclick="likeDocument('@Model.DocumentID')">顶</button>
-<button id="dislikeButton" onclick="dislikeDocument('@Model.DocumentID')">踩</button>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 
 
 
 
-<!-- Rest of the view content -->
-<!-- Add the latest PDF.js library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
-<!-- Add the PDF.js worker script -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js"></script>
+<style>
+    body {
+        background-color: whitesmoke;
+    }
 
-<!-- Add the PDF.js viewer stylesheet -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf_viewer.min.css">
+    .container {
+        max-height: 750px;
+        overflow: auto;
+        width: 830px;
+      margin-left:50px;
+        
+        border-radius: 10px;
+        
+        padding: 0;
+    }
 
-@*For like and dislike function*@
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        .container::-webkit-scrollbar {
+            width: 0; /* Set scrollbar width */
+        }
 
+        .container::-webkit-scrollbar-thumb {
+            background-color: darkgray; /* Scrollbar thumb color */
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background-color: transparent; /* Scrollbar track color */
+        }
+
+    .toolbox {
+        color: white;
+        background-color: rgb(59, 55, 55);
+        width: 550px;
+        height: 60px;
+        position: absolute;
+        bottom: 0;
+        top: 600px;
+        margin-left: 20px;
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+        border-radius: 30px;
+    }
+
+    .upperdiv {
+        width: 100%;
+        height: 30px;
+        justify-content: space-around;
+        display: flex;
+    }
+
+    .div-2 {
+        width: 100%;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+
+    .download {
+        background-color: #20b520;
+        border: none;
+        outline: none;
+        color: white;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        border-radius: 10px;
+    }
+
+    .like {
+        background-color: white;
+        border: none;
+        outline: none;
+        color: black;
+        width: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        border-radius: 50px;
+    }
+   
+
+</style>
+
+
+<div class="upperdiv">
+    <span><i class="bi bi-file-earmark-fill"></i>    课程名称：@Model.CourseName</span>
+    <span><i class="bi bi-file-earmark-pdf"></i>   文件名称: @Model.DocumentName</span>
+    <span>Document ID: @Model.DocumentID</span>
+</div>
+
+<br />
+
+<div class="div-2">
+    <button id="downloadButton" class="download"><i class="bi bi-cloud-arrow-down-fill"></i>    Download File</button>
+    <span id="likeCount"><i class="bi bi-hand-thumbs-up"></i>   顶：@Model.LikeNumber </span>
+    <span id="dislikeCount"><i class="bi bi-hand-thumbs-down"></i>踩:  @Model.DislikeNumber</span>
+    <span id="rating">正面评价百分比：  @(Model.Rating)% </span>
+
+
+
+    <button id="likeButton" onclick="likeDocument('@Model.DocumentID')" class="like"><i class="bi bi-hand-thumbs-up"></i>  顶</button>
+    <button id="dislikeButton" onclick="dislikeDocument('@Model.DocumentID')" class="like"><i class="bi bi-hand-thumbs-down"></i>  踩</button>
+
+</div>
+
+
+<div class="container" id="content-1" onscroll="handleScroll(event)">
+
+
+    <div class="toolbox">
+        <span id="prev_page" style="cursor: pointer;"><i class="bi bi-arrow-up"></i></span>
+        <span id="next_page" style="cursor: pointer;"><i class="bi bi-arrow-down"></i></span>
+        <span id="current_page_num"></span>
+        of
+        <span id="total_page_num"></span>
+        <input type="number" id="page_num" placeholder="Page Number" style="background-color: rgb(59, 55, 55);border-radius: 10px;border: 1px gray solid;padding: 5px; color: white;">
+        <button id="go_to_page" style="background-color: rgb(32, 134, 32);color: white;text-align: center;border: none;padding: 10px;border-radius: 10px; display: none;">Go To Page</button>
+        <span id="zoom_in" style="cursor: pointer;"><i class="bi bi-zoom-in"></i></span>
+        <span id="zoom_out" style="cursor: pointer;"><i class="bi bi-zoom-out"></i></span>
+        <button class="download" id="downloadButtonInToolbar" style="cursor: pointer; border: none; outline: none;"> <i class="bi bi-cloud-arrow-down-fill"></i>  Download</button>
+    </div>
+
+    <div id="pdf_container" class="pdfdiv"></div>
+
+</div>
+
+<br />
+<br />
+
+@*functions*@
+<script>
+    let pdf;
+    let pdfContainer;
+    let isPageRendering;
+    let canvasContext;
+    let totalPages;
+    let currentPageNum = 1;
+    let zoom = 1;
+    let zoomStep = 0.1;
+    window.addEventListener('load', function () {
+        isPageRendering = false;
+        canvasContext = {};
+        pdfContainer = document.getElementById('pdf_container');
+        initEvents();
+        initPDFRenderer();
+    });
+    let zoomInBtn = document.getElementById('zoom_in');
+    let zoomOutBtn = document.getElementById('zoom_out');
+    zoomInBtn.addEventListener('click', zoomIn);
+    zoomOutBtn.addEventListener('click', zoomOut);
+    function initEvents() {
+        let prevPageBtn = document.getElementById('prev_page');
+        let nextPageBtn = document.getElementById('next_page');
+        let goToPage = document.getElementById('go_to_page');
+        let pageNumberInput = document.getElementById('page_num');
+
+        prevPageBtn.addEventListener('click', renderPreviousPage);
+        nextPageBtn.addEventListener('click', renderNextPage);
+
+        // Listen for the "Enter" key press event on the page number input
+        pageNumberInput.addEventListener('keyup', function (event) {
+            if (event.key === 'Enter') {
+                goToPageNum();
+            }
+        });
+    }
+    function zoomIn() {
+        if (zoom < 3) { // You can adjust the maximum zoom level if needed
+            zoom += zoomStep;
+            renderAllPages(); // Re-render all pages with the new zoom level
+        }
+    }
+    function zoomOut() {
+        if (zoom > 0.2) { // You can adjust the minimum zoom level if needed
+            zoom -= zoomStep;
+            renderAllPages(); // Re-render all pages with the new zoom level
+        }
+    }
+    function initPDFRenderer() {
+        var url = 'https://publicreadchina.oss-cn-beijing.aliyuncs.com/%E8%B0%83%E8%AF%95%E6%89%8B%E5%86%8C.pdf';
+        //  var url = 'https://studyfilesbucket1.oss-eu-central-1.aliyuncs.com/Principles_ Life and Work579132053.pdf?Expires=4843603152&OSSAccessKeyId=LTAI5tHfC1uRSqRZswqEo5EQ&Signature=2YFYBJEZpZhzWxHlSUv1BRnA9H4%3D';
+
+        let option = { url };
+
+        pdfjsLib.getDocument(option).promise.then(pdfData => {
+            totalPages = pdfData.numPages;
+            let pagesCounter = document.getElementById('total_page_num');
+            pagesCounter.textContent = totalPages;
+            pdf = pdfData;
+            renderAllPages();
+        });
+    }
+    function renderAllPages() {
+        pdfContainer.innerHTML = ''; // Clear existing content
+
+        for (let i = 1; i <= totalPages; i++) {
+            let canvasId = `pdf_canvas_${i}`;
+            let canvasElement = document.createElement('canvas');
+            canvasElement.id = canvasId;
+            pdfContainer.appendChild(canvasElement);
+
+            let canvas = document.getElementById(canvasId);
+            let canvasCtx = canvas.getContext('2d');
+            canvasContext[i] = canvasCtx;
+
+            renderPage(i, canvasCtx);
+        }
+        updateCurrentPageNum();
+    }
+    function renderNextPage(ev) {
+        if (currentPageNum >= totalPages) {
+            alert("This is the last page");
+            return;
+        }
+        currentPageNum++;
+        updateCurrentPageNum();
+        scrollToPage(currentPageNum);
+    }
+    function renderPreviousPage(ev) {
+        if (currentPageNum <= 1) {
+            alert("This is the first page");
+            return;
+        }
+        currentPageNum--;
+        updateCurrentPageNum();
+        scrollToPage(currentPageNum);
+    }
+    function updateCurrentPageNum() {
+        document.getElementById('current_page_num').textContent = currentPageNum;
+    }
+
+    function goToPageNum() {
+        let numberInput = document.getElementById('page_num');
+        let pageNumber = parseInt(numberInput.value);
+        if (pageNumber) {
+            if (pageNumber <= totalPages && pageNumber >= 1) {
+                currentPageNum = pageNumber;
+                numberInput.value = "";
+                updateCurrentPageNum();
+                scrollToPage(pageNumber);
+                return;
+            }
+        }
+        alert("Enter a valid page number");
+    }
+    function scrollToPage(pageNumber) {
+        const pageElement = document.getElementById(`pdf_canvas_${pageNumber}`);
+        if (pageElement) {
+            pageElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+
+    function renderPage(pageNumToRender = 1, ctx) {
+        isPageRendering = true;
+        pdf.getPage(pageNumToRender).then(page => {
+            const viewport = page.getViewport({ scale: zoom });
+            const canvas = ctx.canvas;
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport,
+            };
+            page.render(renderContext).promise.then(() => {
+                isPageRendering = false;
+                renderTextLayer(page, viewport, canvas);
+            });
+        });
+    }
+
+
+    function renderTextLayer(page, viewport, canvas) {
+        const textLayerDiv = document.createElement('div');
+        textLayerDiv.className = 'textLayer';
+        canvas.parentNode.appendChild(textLayerDiv);
+
+        const customTextLayer = new window.TextLayerBuilder({
+            textLayerDiv,
+            pageIndex: page.pageIndex,
+            viewport,
+        });
+
+        page.getTextContent().then(textContent => {
+            customTextLayer.setTextContent(textContent);
+            customTextLayer.render();
+        });
+    }
+
+    function handleScroll(event) {
+        const container = event.target;
+        const containerHeight = container.clientHeight;
+        const totalContainerScrollHeight = container.scrollHeight - containerHeight;
+        const scrollPosition = container.scrollTop;
+
+        // Calculate the current visible page based on the scroll position
+        const normalizedScrollPosition = scrollPosition / totalContainerScrollHeight;
+        const currentPage = Math.floor(normalizedScrollPosition * totalPages) + 1;
+
+        if (currentPage !== currentPageNum) {
+            currentPageNum = currentPage;
+            updateCurrentPageNum();
+        }
+    }
+
+
+
+
+</script>
+
+<!-- download button code -->
+<script>
+    // Get the download button element
+    const downloadButtonInToolbar = document.getElementById("downloadButtonInToolbar");
+
+    // Add click event listener to the download button
+    downloadButtonInToolbar.addEventListener("click", function () {
+        // URL of the PDF file
+        const pdfUrl = 'https://publicreadchina.oss-cn-beijing.aliyuncs.com/%E8%B0%83%E8%AF%95%E6%89%8B%E5%86%8C.pdf';
+
+        // Create an anchor element to trigger the download
+        const link = document.createElement("a");
+        link.href = pdfUrl;
+        link.target = "_blank"; // Open the link in a new tab
+        link.download = "document.pdf"; // Set the downloaded file name
+
+        // Programmatically click the link to initiate download
+        link.click();
+    });
+</script>
+
+<!-- hover code -->
+
+<script>
+
+    $(document).ready(function () {
+        var container = $(".container");
+        var toolbox = $(".toolbox");
+
+
+
+        // Show and hide toolbox when hovering over container
+        container.hover(
+            function () {
+                toolbox.fadeIn(); // Show toolbox when hovering
+            },
+            function () {
+                toolbox.fadeOut(); // Hide toolbox when not hovering
+            }
+        );
+
+
+
+    });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@*
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Get the container element
@@ -59,15 +403,10 @@
 
         // URL of the PDF file (served over HTTPS)
         const UrlNeedModify = '@Model.Link';
-        var pdfUrl = UrlNeedModify.replace(/amp;/g, '');    //the link we got has extra "amp;", all needs to be removed to work
+        //  var pdfUrl = UrlNeedModify.replace(/amp;/g, '');    //the link we got has extra "amp;", all needs to be removed to work
 
-     //   var pdfUrl = 'https://publicreadchina.oss-cn-beijing.aliyuncs.com/%E8%B0%83%E8%AF%95%E6%89%8B%E5%86%8C.pdf';
+  
 
-         //const pdfUrl = 'https://studyfilesbucket1.oss-eu-central-1.aliyuncs.com/Principles_ Life and Work579132053.pdf?Expires=4843603152&OSSAccessKeyId=LTAI5tHfC1uRSqRZswqEo5EQ&Signature=2YFYBJEZpZhzWxHlSUv1BRnA9H4%3D';
-     //   console.log(pdfUrl);
-
-        // Set the worker source URL
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
 
         // Fetch the PDF file
         fetch(pdfUrl)
@@ -83,13 +422,13 @@
                     const totalNumPages = pdf.numPages;
                     let numPages;  // Declare numPages variable outside the if-else blocks
 
-                    if (totalNumPages > 2) {
-                        numPages = 2;   // if the document has greater than 2 pages then we only show 2 pages
+                    if (totalNumPages > 9) {
+                        numPages = 9;   // if the document has greater than 2 pages then we only show 2 pages
                     } else {
                         numPages = totalNumPages;  // else we show the number of pages it has
                     }
 
-                            //we only want to display 2 pages of a pdf now, can edit later
+                    //we only want to display 2 pages of a pdf now, can edit later
                     console.log("If the document have less page than the number we want to display, then we get error log");
                     // Render each page sequentially
                     for (let pageNumber = 1; pageNumber <= numPages; pageNumber++) {
@@ -120,18 +459,18 @@
     });
 
 </script>
-
+*@
 <script>
     //a download button that after user click it, it will let user open a link
     const UrlNeedChange = '@Model.Link';
     var pdfdownloadUrl = UrlNeedChange.replace(/amp;/g, '');    //the link we got has extra "amp;", all needs to be removed to work
 
-    document.getElementById("downloadButton").addEventListener("click", function() {
+    document.getElementById("downloadButton").addEventListener("click", function () {
         window.open(pdfdownloadUrl);
     });
 </script>
 
-
+@*
 <style>
     #pdf-container {
         width: 100%;
@@ -142,7 +481,7 @@
             margin-bottom: 20px;
             border: 1px solid #ccc; /* Optional: Add a border for visual separation */
         }
-</style>
+</style>*@
 
 
 
@@ -151,7 +490,7 @@
 
 
 <script>
- 
+
 
     //we first check if the user have liked or disliked, if they liked then disable the dislike button (same thing for if they have disliked)
     var beginLikeButton = document.getElementById("likeButton");
@@ -170,7 +509,7 @@
 
         if (likedCookie) {
             // User has already liked the document, cancel the action, enable dislike button
-         //   decreaseLikeCount();
+            //   decreaseLikeCount();
             removeCookie("liked_" + documentId);
             dislikeButton.disabled = false; // Enable dislike button
             // Make an AJAX call to the server to update the like count
@@ -187,10 +526,10 @@
                     console.error("An error occurred while canceling like");
                 }
             });
-          
+
         } else if (dislikedCookie) {
             // User has previously disliked the document, remove dislike and increase like
-       
+
             removeCookie("disliked_" + documentId);
             setCookie("liked_" + documentId, true);
 
@@ -211,7 +550,7 @@
             });
         } else {
             // User has not liked or disliked the document before
-    
+
             setCookie("liked_" + documentId, true);
             dislikeButton.disabled = true; // Disable dislike button
 
@@ -232,7 +571,7 @@
 
         }
 
-    
+
     }
 
     function dislikeDocument(documentId) {
@@ -244,9 +583,9 @@
 
         if (dislikedCookie) {
             // User has already disliked the document, cancel the action
-       //     decreaseDislikeCount();
+            //     decreaseDislikeCount();
             removeCookie("disliked_" + documentId);
-             likeButton.disabled = false; // Enable like button
+            likeButton.disabled = false; // Enable like button
             // Make an AJAX call to the server to update the dislike count
             $.ajax({
                 type: "POST",
@@ -263,7 +602,7 @@
             });
         } else if (likedCookie) {
             // User has previously liked the document, remove like and increase dislike
-      
+
             removeCookie("liked_" + documentId);
             setCookie("disliked_" + documentId, true);
 
@@ -284,7 +623,7 @@
             });
         } else {
             // User has not liked or disliked the document before
-     
+
             setCookie("disliked_" + documentId, true);
             likeButton.disabled = true; // Disable like button
             // Make an AJAX call to the server to update the dislike count
@@ -303,7 +642,7 @@
             });
         }
 
-   
+
     }
 
 
@@ -311,12 +650,12 @@
     function updateLikeCount(count) {
         var likeCountElement = document.getElementById("likeCount");
         likeCountElement.innerText = count;
-     }
+    }
 
     function updateDislikeCount(count) {
         var dislikeCountElement = document.getElementById("dislikeCount");
         dislikeCountElement.innerText = count;
-  
+
     }
 
     function setCookie(name, value) {
@@ -347,43 +686,17 @@
             data: { documentId: documentId },
             success: function (result) {
                 $('#rating').text(parseFloat(result));
-               
+
                 var RatingElement = document.getElementById("rating");
-                RatingElement.innerText = parseFloat(result)+"%";
-              // $('#rating').text(likeCount.toFixed(2) + "%");
+                RatingElement.innerText = parseFloat(result) + "%";
+                // $('#rating').text(likeCount.toFixed(2) + "%");
                 //`${parseFloat(result)}%`
             },
             error: function (xhr, status, error) {
                 console.log(error);
-          
-    }
-        });
-    }
 
-</script>
-
-<script>
-
-    // New code to save a document
-    $("#saveDocumentBtn").click(function () {
-        $.ajax({
-            url: '@Url.Action("SaveDocument", "UserSavedInfo")',
-            type: 'POST',
-            data: { documentId: '@Model.DocumentID' },
-            success: function (response) {
-                alert(response.message);
             }
         });
-    });
+    }
+
 </script>
-
-
-
-
-
-
-
-
-
-
-
