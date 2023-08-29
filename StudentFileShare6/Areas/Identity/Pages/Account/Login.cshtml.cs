@@ -107,7 +107,7 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
 
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            //ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
             {
@@ -144,6 +144,11 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
                         ModelState.AddModelError(string.Empty, "用户名或密码错误");
                         return Page();
                     }
+                }
+                else {
+                    ModelState.AddModelError(string.Empty, "用户不存在");
+                    return Page();
+
                 }
 
 
