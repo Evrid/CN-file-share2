@@ -20,7 +20,7 @@ public class University
 
     //public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
 
-    public ICollection<UserSavedInfo> UserSavedInfos { get; set; }
+    public ICollection<UserSavedInfo>? UserSavedInfos { get; set; }
 
     public void GenerateRandomSchoolID(UniversityContext context)
     {

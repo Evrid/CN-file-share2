@@ -40,7 +40,7 @@ namespace StudentFileShare6.Models
 
 
         //  public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
-        public ICollection<UserSavedInfo> UserSavedInfos { get; set; }
+        public ICollection<UserSavedInfo>? UserSavedInfos { get; set; }
 
 
         [NotMapped]
