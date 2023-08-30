@@ -54,7 +54,7 @@ namespace StudentFileShare6.Models
 
             do
             {
-                generatedDocumentID = $"{random.Next(10000, 99999)}{SchoolID.Substring(0, 2)}{CourseID.Substring(0, 2)}";
+                generatedDocumentID = $"{random.Next(1000000, 9999999)}{SchoolID.Substring(0, 2)}{CourseID.Substring(0, 2)}";
             } while (!IsDocumentIDUnique(context, generatedDocumentID));
 
             DocumentID = generatedDocumentID;

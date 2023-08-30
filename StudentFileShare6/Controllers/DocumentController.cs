@@ -26,6 +26,7 @@ using PdfiumViewer;
 using System.Drawing;
 using System.Drawing.Imaging;
 using RestSharp;
+using NPinyin;
 
 namespace StudentFileShare6.Controllers
 {
@@ -222,6 +223,11 @@ namespace StudentFileShare6.Controllers
                     // because for OSS, if you upload an object that has the same name as an existing object, the existing object is overwritten by the uploaded object
                     //another method see https://www.alibabacloud.com/help/en/object-storage-service/latest/disable-overwrite-for-objects-with-the-same-name-3
                     string fileName = Path.GetFileName(file.FileName);  // assuming fileName is "example.txt"
+                   
+                    string fileExtension = Path.GetExtension(fileName);
+                    // string UploadfileName = document.DocumentID+"."+ fileExtension;   //we only store number as file name in OSS because Chinese characters cause error
+                    string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
+
                     string documentIDTemp = document.DocumentID;
                     // Find the position of the dot in fileName
                     int dotIndex = fileName.IndexOf(".");
@@ -257,7 +263,7 @@ namespace StudentFileShare6.Controllers
 
                     //
 
-                    var putObjectRequest = new PutObjectRequest(bucketName, fileName, fileStream);
+                    var putObjectRequest = new PutObjectRequest(bucketName, UploadfileName, fileStream);
                     //putObjectRequest.StreamTransferProgress += (object sender, StreamTransferProgressArgs args) => streamProgressCallbackAsync(sender, args, document, document.DocumentID, _hubContext);
 
                     putObjectRequest.StreamTransferProgress += async (object sender, StreamTransferProgressArgs args) =>
@@ -270,7 +276,7 @@ namespace StudentFileShare6.Controllers
 
 
 
-                    var request = new GeneratePresignedUriRequest(bucketName, fileName, SignHttpMethod.Get);
+                    var request = new GeneratePresignedUriRequest(bucketName, UploadfileName, SignHttpMethod.Get);
                     request.Expiration = DateTime.UtcNow.AddYears(100); // Set expiration to a distant future date, practically making it non-expiring
 
                     var objectUrl = ossClient.GeneratePresignedUri(request); // Generate the pre-signed URL
