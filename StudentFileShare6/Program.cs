@@ -44,6 +44,13 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     options.SignIn.RequireConfirmedPhoneNumber = false; // If you also use phone number confirmation, set this to false.
 
 
+    // Add password settings
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+
 })
     .AddEntityFrameworkStores<ApplicationDatabaseConnection>();
 
