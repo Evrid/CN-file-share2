@@ -62,10 +62,10 @@
 
             <div class="form-group">
                 <label asp-for="CourseID" class="control-label">请输入课程名称：</label>
-                <input type="text" id="courseInput" class="form-control" autocomplete="off" list="courseList" required disabled />
+                <input type="text" id="courseInput" class="form-control" autocomplete="off" list="courseList" required placeholder="选择大学后才能搜索并选择课程" disabled />
                 @*  Disabled unless "schoolInput" is selected first. *@
                 <datalist id="courseList"></datalist>
-                <input type="hidden" asp-for="CourseID" />
+                <input type="hidden" asp-for="CourseID"  />
             </div>
 
             <a href="@Url.Content("/course/create")">创建新的课程</a>
@@ -307,8 +307,18 @@
 
         document.getElementById('schoolInput').addEventListener('input', function () {
             //The "change" event listener will be triggered when the user selects an option from a dropdown, but not when they simply enter text in the input field (we use "input" if we want to detect if the user entered something).
+            //if "change" doesn't work, try "input"
+            var firstInputValue = this.value;
+            console.log(firstInputValue);
             var secondInput = document.getElementById('courseInput');
-            secondInput.disabled = false;
+
+            if (firstInputValue.length >= 4 && firstInputValue.includes('(') && firstInputValue.includes(')')) {
+                secondInput.disabled = false;
+            } else {
+                secondInput.disabled = true;
+            }
+
+
         });
 
     </script>
