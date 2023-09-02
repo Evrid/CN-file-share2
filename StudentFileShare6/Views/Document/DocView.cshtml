@@ -24,11 +24,18 @@
 
     .container {
         max-height: 750px;
-        overflow: auto;
+        overflow: visible; /* Changed from auto */
         width: 830px;
         margin-left: 50px;
         border-radius: 10px;
         padding: 0;
+    }
+
+
+    .pdfdiv {
+        max-height: 750px; /* Or whatever height you prefer */
+        overflow: auto; /* Will scroll if content is taller than max-height */
+        width: 100%; /* Assuming you want it to take the full width */
     }
 
         .container::-webkit-scrollbar {
@@ -124,7 +131,8 @@
 </div>
 
 
-<div class="container" id="content-1" onscroll="handleScroll(event)">
+
+    <div id="pdf_container" class="pdfdiv"></div>
 
 
     <div class="toolbox">
