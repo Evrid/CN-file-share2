@@ -146,6 +146,11 @@
     </div>
 </div>
 <script>
+
+    const UrlNeedChange = '@Model.Link';
+    var pdfshowUrl = UrlNeedChange.replace(/amp;/g, '');    //the link we got has extra "amp;", all needs to be removed to work
+
+
     $.when(
         $.getScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"),
         $.getScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js")
@@ -155,7 +160,7 @@
         }).then(function () {
             $("#pdfViewer").kendoPDFViewer({
                 pdfjsProcessing: {
-                    file: "https://publicreadchina.oss-cn-beijing.aliyuncs.com/%E8%B0%83%E8%AF%95%E6%89%8B%E5%86%8C.pdf"
+                    file: pdfshowUrl
                 },
                 width: "100%",
                 height: 800
