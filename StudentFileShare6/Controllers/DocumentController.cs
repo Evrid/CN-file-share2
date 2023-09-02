@@ -225,8 +225,9 @@ namespace StudentFileShare6.Controllers
                     string fileName = Path.GetFileName(file.FileName);  // assuming fileName is "example.txt"
                    
                     string fileExtension = Path.GetExtension(fileName);
-                    // string UploadfileName = document.DocumentID+"."+ fileExtension;   //we only store number as file name in OSS because Chinese characters cause error
-                    string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
+                    
+                    string UploadfileName = document.DocumentID+"."+ fileExtension;   //we only store number as file name in OSS because Chinese characters cause error
+                   // string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
 
                     string documentIDTemp = document.DocumentID;
                     // Find the position of the dot in fileName
