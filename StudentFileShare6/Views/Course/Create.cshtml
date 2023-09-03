@@ -103,13 +103,23 @@
         const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
 
         inputElement.addEventListener('input', function () {
-            const inputText = inputElement.value;
-            if (inputText.length === 0) {
+
+            const inputText = inputElement.value.trim(); // trim removes leading and trailing white spaces
+            if (!inputText) { // checks for null, empty string, or white spaces
                 customDatalist.innerHTML = '';
                 customDatalist.style.display = 'none';
-            } else {
-                getUniversities(inputText);
+                return; // exit the function
             }
+            
+            getUniversities(inputText);
+        
+            //const inputText = inputElement.value;
+            //if (inputText.length === 0) {
+            //    customDatalist.innerHTML = '';
+            //    customDatalist.style.display = 'none';
+            //} else {
+            //    getUniversities(inputText);
+            //}
         });
 
         function getUniversities(searchText) {
@@ -119,28 +129,38 @@
                     customDatalist.innerHTML = '';
                     customDatalist.style.display = 'block';
 
-                    for (const key in data) {
-                        if (data.hasOwnProperty(key)) {
-                            const university = data[key];
-                            const divElement = document.createElement('div');
-                            divElement.textContent = university.name;
-                            divElement.classList.add('custom-option');
-                            divElement.setAttribute('data-value', university.schoolID);
-                            customDatalist.appendChild(divElement);
+                    if (Object.keys(data).length === 0) {
+                        // Show 'No matching university' if no universities are found
+                        const divElement = document.createElement('div');
+                        divElement.textContent = '没有匹配的大学';
+                        divElement.classList.add('custom-option');
+                        customDatalist.appendChild(divElement);
+                    } else {
+                        // Populate the dropdown with universities
+                        for (const key in data) {
+                            if (data.hasOwnProperty(key)) {
+                                const university = data[key];
+                                const divElement = document.createElement('div');
+                                divElement.textContent = university.name;
+                                divElement.classList.add('custom-option');
+                                divElement.setAttribute('data-value', university.schoolID);
+                                customDatalist.appendChild(divElement);
+                            }
                         }
-                    }
 
-                    // Add click event listeners to each custom option
-                    document.querySelectorAll('.custom-option').forEach(option => {
-                        option.addEventListener('click', function () {
-                            const selectedValue = this.getAttribute('data-value');
-                            inputElement.value = this.textContent;
-                            hiddenInput.value = selectedValue;
-                            customDatalist.style.display = 'none';
+                        // Add click event listeners to each custom option
+                        document.querySelectorAll('.custom-option').forEach(option => {
+                            option.addEventListener('click', function () {
+                                const selectedValue = this.getAttribute('data-value');
+                                inputElement.value = this.textContent;
+                                hiddenInput.value = selectedValue;
+                                customDatalist.style.display = 'none';
+                            });
                         });
-                    });
+                    }
                 });
         }
+
 
     </script>
 
