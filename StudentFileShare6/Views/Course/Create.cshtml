@@ -29,9 +29,14 @@
             <div class="form-group">
                 <label asp-for="SchoolID" class="control-label">请输入并选择学校名称：</label>
                 <input type="text" id="schoolInput" class="form-control" autocomplete="off" list="universityList" />
-                <datalist id="universityList"></datalist>
+                <div id="universityList" class="custom-datalist"></div>
                 <input type="hidden" asp-for="SchoolID" />
             </div>
+
+        
+
+
+
             <a href="@Url.Content("/university/Create")">创建新的大学</a>
 
             <div class="form-group">
@@ -62,6 +67,22 @@
     </div>
 </div>
 
+
+<style>
+
+    .custom-datalist {
+        display: none;
+        border: 1px solid #ccc;
+        position: absolute;
+        background-color: white; /* Add this line */
+    }
+
+.custom-option {
+  padding: 8px;
+  cursor: pointer;
+}
+</style>
+
 @*<div>
     <a asp-action="Index">返回列表</a>
 </div>*@
@@ -73,16 +94,19 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
+  
+
+
     <script>
-        // For dynamic university input
         const inputElement = document.getElementById('schoolInput');
-        const datalistElement = document.getElementById('universityList');
+        const customDatalist = document.getElementById('universityList');
         const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
 
         inputElement.addEventListener('input', function () {
             const inputText = inputElement.value;
             if (inputText.length === 0) {
-                datalistElement.innerHTML = ''; // Clear the datalist if the input is empty
+                customDatalist.innerHTML = '';
+                customDatalist.style.display = 'none';
             } else {
                 getUniversities(inputText);
             }
@@ -92,32 +116,32 @@
             fetch(`/Document/GetUniversities?searchText=${searchText}`)
                 .then(response => response.json())
                 .then(data => {
-                    datalistElement.innerHTML = ''; // Clear the datalist
+                    customDatalist.innerHTML = '';
+                    customDatalist.style.display = 'block';
 
                     for (const key in data) {
                         if (data.hasOwnProperty(key)) {
                             const university = data[key];
-                            const optionElement = document.createElement('option');
-                            optionElement.text = university.name;
-                            optionElement.setAttribute('data-value', university.schoolID);
-                            datalistElement.appendChild(optionElement);
+                            const divElement = document.createElement('div');
+                            divElement.textContent = university.name;
+                            divElement.classList.add('custom-option');
+                            divElement.setAttribute('data-value', university.schoolID);
+                            customDatalist.appendChild(divElement);
                         }
                     }
 
-                    // Event listener to handle option selection, set the value of input "schoolID" to the corresponding "name" of the school user selected
-                    schoolInput.addEventListener('input', function (event) {
-                        const selectedText = event.target.value;
-                        const selectedOption = Array.from(datalistElement.options).find(option => option.text === selectedText);
-
-                        if (selectedOption) {
-                            const selectedValue = selectedOption.getAttribute('data-value');
+                    // Add click event listeners to each custom option
+                    document.querySelectorAll('.custom-option').forEach(option => {
+                        option.addEventListener('click', function () {
+                            const selectedValue = this.getAttribute('data-value');
+                            inputElement.value = this.textContent;
                             hiddenInput.value = selectedValue;
-                        } else {
-                            hiddenInput.value = '';
-                        }
+                            customDatalist.style.display = 'none';
+                        });
                     });
                 });
         }
+
     </script>
 
     <script>
