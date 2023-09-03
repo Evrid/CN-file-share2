@@ -29,3 +29,17 @@ body {
 .border-cell {
     border: 1px solid black;
 }
+
+
+
+.custom-datalist {
+    display: none;
+    border: 1px solid #ccc;
+    position: absolute;
+    background-color: white; /* Add this line */
+}
+
+.custom-option {
+    padding: 8px;
+    cursor: pointer;
+}

@@ -4,6 +4,8 @@
     ViewData["Title"] = "创建";
 }
 
+
+
 <h1>创建</h1>
 
 <h4>课程</h4>
@@ -70,17 +72,7 @@
 
 <style>
 
-    .custom-datalist {
-        display: none;
-        border: 1px solid #ccc;
-        position: absolute;
-        background-color: white; /* Add this line */
-    }
-
-.custom-option {
-  padding: 8px;
-  cursor: pointer;
-}
+   
 </style>
 
 @*<div>
@@ -111,55 +103,12 @@
                 return; // exit the function
             }
             
-            getUniversities(inputText);
+            getUniversities(inputText);   //this function is in site.css
         
-            //const inputText = inputElement.value;
-            //if (inputText.length === 0) {
-            //    customDatalist.innerHTML = '';
-            //    customDatalist.style.display = 'none';
-            //} else {
-            //    getUniversities(inputText);
-            //}
+            
         });
 
-        function getUniversities(searchText) {
-            fetch(`/Document/GetUniversities?searchText=${searchText}`)
-                .then(response => response.json())
-                .then(data => {
-                    customDatalist.innerHTML = '';
-                    customDatalist.style.display = 'block';
-
-                    if (Object.keys(data).length === 0) {
-                        // Show 'No matching university' if no universities are found
-                        const divElement = document.createElement('div');
-                        divElement.textContent = '没有匹配的大学';
-                        divElement.classList.add('custom-option');
-                        customDatalist.appendChild(divElement);
-                    } else {
-                        // Populate the dropdown with universities
-                        for (const key in data) {
-                            if (data.hasOwnProperty(key)) {
-                                const university = data[key];
-                                const divElement = document.createElement('div');
-                                divElement.textContent = university.name;
-                                divElement.classList.add('custom-option');
-                                divElement.setAttribute('data-value', university.schoolID);
-                                customDatalist.appendChild(divElement);
-                            }
-                        }
-
-                        // Add click event listeners to each custom option
-                        document.querySelectorAll('.custom-option').forEach(option => {
-                            option.addEventListener('click', function () {
-                                const selectedValue = this.getAttribute('data-value');
-                                inputElement.value = this.textContent;
-                                hiddenInput.value = selectedValue;
-                                customDatalist.style.display = 'none';
-                            });
-                        });
-                    }
-                });
-        }
+      
 
 
     </script>
@@ -168,18 +117,23 @@
         // If the user didn't select the right option when clicking the submit button, prevent form submission to keep the data they entered
         document.querySelector('input[type="submit"]').addEventListener('click', function (event) {
             var input = document.getElementById('schoolInput');
-            var options = document.getElementById('universityList').options;
+            var customOptions = document.querySelectorAll('#universityList .custom-option');
             var value = input.value;
+            var courseNameInput = document.getElementById('courseNameInput').value;
 
-            var match = Array.from(options).find(function (option) {
-                return option.value === value;
+            var match = Array.from(customOptions).find(function (option) {
+                return option.textContent === value;
             });
 
             if (!match) {
                 event.preventDefault(); // Prevent form submission
                 alert('请从列表中输入并选择大学名称。');
-            } else {
-                var courseNameInput = document.getElementById('courseNameInput').value;
+            } else if (courseNameInput === null || courseNameInput.trim() === "") {
+                event.preventDefault(); // Prevent form submission
+                alert('请输入课程名字。')
+            }
+            else {
+                
 
                 event.preventDefault(); // Prevents the form from submitting immediately
 
@@ -202,3 +156,43 @@
         });
     </script>
 }
+
+
+@*
+<script>
+
+
+    //document.querySelector('input[type="submitButton"]').addEventListener('click', function (event) {
+
+    document.getElementById('submitButton').addEventListener('click', function (event) {
+       
+
+        var input = document.getElementById('schoolInput');
+        var options = document.getElementById('universityList').options;
+        var value = input.value;
+        var name = document.getElementById('courseNameInput').value;
+
+
+        var match = Array.from(options).find(function (option) {
+            return option.value === value;
+        });
+        if (!match || name === '') {
+            event.preventDefault(); // Prevent form submission
+
+            var errorMessage = '';
+
+            if (!match) {
+                errorMessage += 'Please enter and select a valid university option ';
+            }
+
+            if (name === '') {
+                errorMessage += 'Please provide a value for the "Name of your file" field.';
+            }
+
+            alert(errorMessage);
+        }
+    });
+
+
+</script>
+*@
