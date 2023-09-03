@@ -3,6 +3,17 @@
 
 // Write your JavaScript code.
 
+function debounce(func, delay) {     //When you listen to the 'input' event, multiple requests might be sent in quick succession. Debouncing can help reduce the number of requests.
+    let debounceTimer;
+    return function () {
+        const context = this;
+        const args = arguments;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => func.apply(context, args), delay);
+    };
+}
+
+
 
 function getUniversities(searchText) {
     fetch(`/Document/GetUniversities?searchText=${searchText}`)

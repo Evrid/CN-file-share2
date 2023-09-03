@@ -90,9 +90,13 @@
 
 
     <script>
+    
         const inputElement = document.getElementById('schoolInput');
         const customDatalist = document.getElementById('universityList');
         const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
+
+        const debouncedGetUniversities = debounce(getUniversities, 300); // 300ms delay
+
 
         inputElement.addEventListener('input', function () {
 
@@ -103,8 +107,8 @@
                 return; // exit the function
             }
             
-            getUniversities(inputText);   //this function is in site.css
-        
+           // getUniversities(inputText);   //this function is in site.css
+            debouncedGetUniversities(inputText);
             
         });
 
@@ -157,42 +161,3 @@
     </script>
 }
 
-
-@*
-<script>
-
-
-    //document.querySelector('input[type="submitButton"]').addEventListener('click', function (event) {
-
-    document.getElementById('submitButton').addEventListener('click', function (event) {
-       
-
-        var input = document.getElementById('schoolInput');
-        var options = document.getElementById('universityList').options;
-        var value = input.value;
-        var name = document.getElementById('courseNameInput').value;
-
-
-        var match = Array.from(options).find(function (option) {
-            return option.value === value;
-        });
-        if (!match || name === '') {
-            event.preventDefault(); // Prevent form submission
-
-            var errorMessage = '';
-
-            if (!match) {
-                errorMessage += 'Please enter and select a valid university option ';
-            }
-
-            if (name === '') {
-                errorMessage += 'Please provide a value for the "Name of your file" field.';
-            }
-
-            alert(errorMessage);
-        }
-    });
-
-
-</script>
-*@
