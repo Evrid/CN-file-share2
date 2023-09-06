@@ -11,17 +11,21 @@
         <form id="searchDocumentForm" enctype="multipart/form-data">
 
             <div class="form-group">
-                <label asp-for="SchoolID" class="control-label">请输入并选择大学名称：</label>
-                <input type="text" id="schoolInput" class="form-control" autocomplete="off" list="universityList" required />
-                <datalist id="universityList"></datalist>
+                <label asp-for="SchoolID" class="control-label">请输入并选择学校名称：</label>
+                <input type="text" id="schoolInput" class="form-control" autocomplete="off" list="universityList" />
+                <div id="universityList" class="custom-datalist"></div>
                 <input type="hidden" asp-for="SchoolID" />
             </div>
 
             <div class="form-group">
                 <label asp-for="CourseID" class="control-label">请输入并选择课程名称：</label>
-                <input type="text" id="courseInput" class="form-control" autocomplete="off" list="courseList" required placeholder="选择大学后才能搜索并选择课程"  disabled />
-                <!-- disabled，除非先从“schoolInput”中选择 -->
-                <datalist id="courseList"></datalist>
+                <input type="text" id="courseInput" class="form-control" autocomplete="off" required placeholder="选择大学后才能搜索并选择课程" disabled />
+                <!-- Disabled, can only search and select courses after selecting from "schoolInput" -->
+                <!-- Custom datalist replacement -->
+                <div id="customDatalist2" class="custom-dropdown" style="display: none;">
+                    <!-- The course options will be populated here by the JavaScript function -->
+                </div>
+
                 <input type="hidden" asp-for="CourseID" />
             </div>
 
@@ -84,37 +88,45 @@
 
 @section Scripts {
 
- 
+
 
 
 
     <script>
-        //For university
-        const inputElement = document.getElementById('schoolInput');
-        const datalistElement = document.getElementById('universityList');
-        const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
-        // When the user selects an option from the datalist, the corresponding value is set to the hidden input field (hiddenInput.value = selectedValue). This means that when the form is submitted, the value of the hidden input field will be included in the form data
 
-        var SelectedSchoolID;   //for select course only in the university
+        const inputElement = document.getElementById('schoolInput');
+        const customDatalist = document.getElementById('universityList');
+        const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
+
+        const debouncedGetUniversities = debounce(getUniversities, 300); // 300ms delay
 
 
         inputElement.addEventListener('input', function () {
-            const inputText = inputElement.value;
-            if (inputText.length === 0) {
-                datalistElement.innerHTML = ''; // Clear the datalist if the input is empty
-            } else {
 
-                //  console.log(inputText);   //works well
-                getUniversities(inputText);
+            const inputText = inputElement.value.trim(); // trim removes leading and trailing white spaces
+            if (!inputText) { // checks for null, empty string, or white spaces
+                customDatalist.innerHTML = '';
+                customDatalist.style.display = 'none';
+                return; // exit the function
             }
+
+            // getUniversities(inputText);   //this function is in site.js
+            debouncedGetUniversities(inputText); //this function is in site.js
+
         });
 
-       
+
+
+
     </script>
+
 
 
     <script>
         //undisable "course" selection when the user has selected something from "university"
+
+        
+
 
         document.getElementById('schoolInput').addEventListener('input', function () {
             //The "change" event listener will be triggered when the user selects an option from a dropdown, but not when they simply enter text in the input field (we use "input" if we want to detect if the user entered something).
@@ -123,11 +135,11 @@
             console.log(firstInputValue);
             var secondInput = document.getElementById('courseInput');
 
-            if (firstInputValue.length >= 4 && firstInputValue.includes('(') && firstInputValue.includes(')')) {
+            //if (firstInputValue.length >= 4 && firstInputValue.includes('(') && firstInputValue.includes(')')) {
                 secondInput.disabled = false;
-            } else {
-                secondInput.disabled = true;
-            }
+            //} else {
+           //     secondInput.disabled = true;
+          //  }
 
 
         });
@@ -138,22 +150,24 @@
     <script>
         //For courses
 
+      
+
         const inputElement2 = document.getElementById('courseInput');
         const datalistElement2 = document.getElementById('courseList');
         const hiddenInput2 = document.querySelector('input[type="hidden"][name="CourseID"]');
-        // When the user selects an option from the datalist, the corresponding value is set to the hidden input field. This means that when the form is submitted, the value of the hidden input field will be included in the form data
 
+        const debouncedGetCourses = debounce(getCourses, 300); // 300ms delay
 
         inputElement2.addEventListener('input', function () {
-            const inputText2 = inputElement2.value;
-            if (inputText2.length === 0) {
+            const inputText2 = inputElement2.value.trim(); // trim removes leading and trailing white spaces
+            if (!inputText2) { // checks for null, empty string, or white spaces
                 datalistElement2.innerHTML = ''; // Clear the datalist if the input is empty
-            } else {
-
-                  console.log(inputText2);   //works well
-                getCourses(inputText2);
+                return; // exit the function
             }
+
+            debouncedGetCourses(inputText2); // Call the debounced version of getCourses
         });
+
 
         
     </script>
@@ -163,11 +177,11 @@
         //ask user must select from datalist of courseList
         document.querySelector('form').addEventListener('submit', function (event) {
             var input = document.getElementById('courseInput');
-            var options = document.getElementById('courseList').options;
+            var customOptions = document.querySelectorAll('#customDatalist2 .custom-option');
             var value = input.value;
 
-            var match = Array.from(options).find(function (option) {
-                return option.value === value;
+            var match = Array.from(customOptions).find(function (option) {
+                return option.textContent === value;
             });
 
             if (!match) {
@@ -175,6 +189,7 @@
                 alert('从列表中选择有效的大学后，从列表中选择有效的课程选项。');
             }
         });
+
 
     </script>
 

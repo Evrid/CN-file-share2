@@ -34,7 +34,7 @@ function getUniversities(searchText) {
                     if (data.hasOwnProperty(key)) {
                         const university = data[key];
                         const divElement = document.createElement('div');
-                        divElement.textContent = university.name;
+                        divElement.textContent = university.name + " (" + university.location + ")";
                         divElement.classList.add('custom-option');
                         divElement.setAttribute('data-value', university.schoolID);
                         customDatalist.appendChild(divElement);
