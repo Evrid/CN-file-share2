@@ -55,48 +55,41 @@ function getUniversities(searchText) {
 }
 
 
-
 function getCourses(searchText2) {
     fetch(`/Document/GetCourses?searchText=${searchText2}&SelectedSchoolID=${SelectedSchoolID}`)
-
-        //the GetUniversities function in DocumentController.cs is not directly called in the Create.cshtml file.
-        // Instead, it is called asynchronously from JavaScript code using the fetch API.
         .then(response => response.json())
         .then(data => {
-            console.log("got json reponse");
-            console.log(data);
-            datalistElement2.innerHTML = ''; // Clear the datalist
-            //       console.log(data); // Log the response data to the console, works well
-            //        console.log(typeof(data));
-            //if the typeof(data) is showing "object" instead of an array, it suggests that the data variable is an object rather than an array.
-            for (const key in data) {
-                console.log(key);
-                // iterate over the enumerable properties of an object.
-                if (data.hasOwnProperty(key)) {
-                    //The hasOwnProperty() method is used to ensure that the property belongs directly to the data object itself and not to its prototype chain.
-                    const course = data[key];
-                    console.log(course);  // works well
-                    const optionElement = document.createElement('option');
-                    optionElement.text = course.name;
-                    optionElement.setAttribute('data-value', course.courseID);
-                    //   console.log(course.name);   //works well
-                    datalistElement2.appendChild(optionElement);
+            customDatalist2.innerHTML = ''; // Clear the custom datalist
+            customDatalist2.style.display = 'block'; // Display the custom datalist
+
+            if (Object.keys(data).length === 0) {
+                // Show 'No matching courses' if no courses are found
+                const divElement = document.createElement('div');
+                divElement.textContent = 'No matching courses';
+                divElement.classList.add('custom-option');
+                customDatalist2.appendChild(divElement);
+            } else {
+                // Populate the dropdown with courses
+                for (const key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        const course = data[key];
+                        const divElement = document.createElement('div');
+                        divElement.textContent = course.name;
+                        divElement.classList.add('custom-option');
+                        divElement.setAttribute('data-value', course.courseID);
+                        customDatalist2.appendChild(divElement);
+                    }
                 }
+
+                // Add click event listeners to each custom option
+                document.querySelectorAll('.custom-option').forEach(option => {
+                    option.addEventListener('click', function () {
+                        const selectedValue = this.getAttribute('data-value');
+                        courseInput.value = this.textContent;
+                        hiddenInput2.value = selectedValue;
+                        customDatalist2.style.display = 'none';
+                    });
+                });
             }
-
-            // Event listener to handle option selection, set the value of input “schoolID” to the corresponding “name” of the school user selected
-            courseInput.addEventListener('input', function (event) {
-                const selectedText = event.target.value;
-                const selectedOption = Array.from(datalistElement2.options).find(option => option.text === selectedText);
-
-                if (selectedOption) {
-                    const selectedValue = selectedOption.getAttribute('data-value');
-                    hiddenInput2.value = selectedValue;
-                    console.log('Selected CourseID Value:', selectedValue);
-                } else {
-                    hiddenInput2.value = '';
-                    console.log('Selected CourseID Value: None');
-                }
-            });
         });
 }
