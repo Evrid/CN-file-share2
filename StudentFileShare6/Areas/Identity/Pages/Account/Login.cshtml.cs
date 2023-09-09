@@ -122,34 +122,42 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
 
                 if (user != null)
                 {
-                    var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-                  
+                    // Check if the password is valid for the retrieved user
+                    var isPasswordValid = await _userManager.CheckPasswordAsync(user, Input.Password);
 
-                    if (result.Succeeded)
+                    // If the password is valid, sign in the user
+                    if (isPasswordValid)
                     {
+                        await _signInManager.SignInAsync(user, Input.RememberMe);
                         _logger.LogInformation("User logged in.");
                         return LocalRedirect(returnUrl);
                     }
-                    if (result.RequiresTwoFactor)
-                    {
-                        return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                    }
-                    if (result.IsLockedOut)
-                    {
-                        _logger.LogWarning("User account locked out.");
-                        return RedirectToPage("./Lockout");
-                    }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, "用户名或密码错误");
-                        return Page();
+                        // If the user has two-factor authentication enabled, handle that scenario
+                        if (await _userManager.GetTwoFactorEnabledAsync(user) )
+                        {
+                            return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
+                        }
+                        // If the user account is locked out, handle that scenario
+                        else if (await _userManager.IsLockedOutAsync(user))
+                        {
+                            _logger.LogWarning("User account locked out.");
+                            return RedirectToPage("./Lockout");
+                        }
+                        else
+                        {
+                            ModelState.AddModelError(string.Empty, "用户名或密码错误");
+                            return Page();
+                        }
                     }
                 }
-                else {
+                else
+                {
                     ModelState.AddModelError(string.Empty, "用户不存在");
                     return Page();
-
                 }
+
 
 
 

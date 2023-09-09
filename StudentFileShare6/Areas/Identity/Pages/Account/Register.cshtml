@@ -27,6 +27,13 @@
                 <span id="timer"></span>
             </div>
 
+            <div class="form-floating mb-3">
+                <input asp-for="Input.UserName" class="form-control" />
+                <label asp-for="Input.UserName">用户名</label>
+                <span asp-validation-for="Input.UserName" class="text-danger"></span>
+            </div>
+          @*  will generate random username if the user doesn't enter one*@
+
 
 
             <div class="form-floating mb-3">
@@ -141,6 +148,27 @@
                     }
                 });
             });
+        });
+
+
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userNameInput = document.querySelector('input[name="Input.UserName"]');
+
+            if (!userNameInput.value) {
+                userNameInput.value = generateRandomString();
+            }
+
+            function generateRandomString(length = 10) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
         });
     </script>
 }

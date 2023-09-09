@@ -95,6 +95,11 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
+
+            [Required(ErrorMessage = "用户名为必填项。")]
+            [Display(Name = "验证码")]
+            public string UserName { get; set; }
+
             [Required(ErrorMessage = "密码为必填项。")]
             [StringLength(100, ErrorMessage = "{0} 的长度必须至少为 {2} 个字符，最多为 {1} 个字符。", MinimumLength = 6)]
             [DataType(DataType.Password)]
@@ -148,7 +153,7 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
 
                 var user = CreateUser();
 
-                await _userStore.SetUserNameAsync(user, Input.PhoneNumber, CancellationToken.None);
+                await _userStore.SetUserNameAsync(user, Input.UserName, CancellationToken.None);
                 await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
                 await _emailStore.SetEmailAsync(user, null, CancellationToken.None);   //was Input.Email instead of null
                 var result = await _userManager.CreateAsync(user, Input.Password);
@@ -225,6 +230,8 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             Random random = new Random();
             return random.Next(100000, 999999).ToString();
         }
+
+
 
     }
 }
