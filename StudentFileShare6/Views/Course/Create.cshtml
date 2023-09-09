@@ -79,45 +79,20 @@
         const datalistElement = document.getElementById('universityList');
         const hiddenInput = document.querySelector('input[type="hidden"][name="SchoolID"]');
 
+
         inputElement.addEventListener('input', function () {
-            const inputText = inputElement.value;
+            const inputText = inputElement.value.trim();
             if (inputText.length === 0) {
                 datalistElement.innerHTML = ''; // Clear the datalist if the input is empty
-            } else {
-                getUniversities(inputText);
+                return; // exit the function
             }
+
+            //  console.log(inputText);   //works well
+            getUniversities(inputText);
+
         });
 
-        function getUniversities(searchText) {
-            fetch(`/Document/GetUniversities?searchText=${searchText}`)
-                .then(response => response.json())
-                .then(data => {
-                    datalistElement.innerHTML = ''; // Clear the datalist
-
-                    for (const key in data) {
-                        if (data.hasOwnProperty(key)) {
-                            const university = data[key];
-                            const optionElement = document.createElement('option');
-                            optionElement.text = university.name;
-                            optionElement.setAttribute('data-value', university.schoolID);
-                            datalistElement.appendChild(optionElement);
-                        }
-                    }
-
-                    // Event listener to handle option selection, set the value of input "schoolID" to the corresponding "name" of the school user selected
-                    schoolInput.addEventListener('input', function (event) {
-                        const selectedText = event.target.value;
-                        const selectedOption = Array.from(datalistElement.options).find(option => option.text === selectedText);
-
-                        if (selectedOption) {
-                            const selectedValue = selectedOption.getAttribute('data-value');
-                            hiddenInput.value = selectedValue;
-                        } else {
-                            hiddenInput.value = '';
-                        }
-                    });
-                });
-        }
+       
     </script>
 
     <script>
