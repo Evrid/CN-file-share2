@@ -97,7 +97,8 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account
             /// </summary>
 
             [Required(ErrorMessage = "用户名为必填项。")]
-            [Display(Name = "验证码")]
+            [Display(Name = "用户名")]
+            [StringLength(10, MinimumLength = 4, ErrorMessage = "用户名长度必须在4到10个字符之间。")]
             public string UserName { get; set; }
 
             [Required(ErrorMessage = "密码为必填项。")]

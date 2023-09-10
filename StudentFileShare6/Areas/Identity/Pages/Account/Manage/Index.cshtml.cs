@@ -56,8 +56,13 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account.Manage
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Phone]
+            [Required(ErrorMessage = "电话为必填项。")]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            [Required(ErrorMessage = "用户名为必填项。")]
+            [Display(Name = "用户名")]
+            [StringLength(10, MinimumLength = 4, ErrorMessage = "用户名长度必须在4到10个字符之间。")]
             public string UserName { get; set; }
         }
 
@@ -107,6 +112,14 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account.Manage
 
             if (!ModelState.IsValid)
             {
+                //foreach (var modelStateValue in ModelState.Values)
+                //{
+                //    foreach (var error in modelStateValue.Errors)
+                //    {
+                //        var errorMessage = error.ErrorMessage;
+                //        // Log or print the errorMessage to see what errors are present.
+                //    }
+                //}
                 await LoadAsync(user);
                 return Page();
             }

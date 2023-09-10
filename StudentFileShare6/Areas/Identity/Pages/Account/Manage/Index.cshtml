@@ -14,6 +14,7 @@
             <div class="form-floating mb-3">
                 <input asp-for="Input.UserName" class="form-control" placeholder="请选择您的用户名。" />
                 <label asp-for="Input.UserName" class="form-label"></label>
+                <span asp-validation-for="Input.UserName" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <input asp-for="Input.PhoneNumber" class="form-control" placeholder="请输入您的电话号码。" />
