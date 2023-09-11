@@ -202,7 +202,9 @@ namespace StudentFileShare6.Controllers
             }
 
 
-            if (ModelState.IsValid)  
+
+
+            if (ModelState.IsValid)
             {
 
 
@@ -211,7 +213,8 @@ namespace StudentFileShare6.Controllers
                 if (file != null && file.Length > 0)
                 {
 
-                    Stream FileStream;
+
+                 
 
                     //    var configuration = new ConfigurationBuilder()
                     //.SetBasePath(Directory.GetCurrentDirectory())
@@ -225,48 +228,36 @@ namespace StudentFileShare6.Controllers
                     var endpoint = _configuration["CloudOSSConnection:endpoint"];
                     var bucketName = _configuration["CloudOSSConnection:bucketName"];
                     var bucketForFirstPagePdf = _configuration["CloudOSSConnection:bucketNameForFirstPagePdf"];
-            
+
                     // because for OSS, if you upload an object that has the same name as an existing object, the existing object is overwritten by the uploaded object
                     //another method see https://www.alibabacloud.com/help/en/object-storage-service/latest/disable-overwrite-for-objects-with-the-same-name-3
                     string fileName = Path.GetFileName(file.FileName);  // assuming fileName is "example.txt"
-                   
-                    string fileExtension = Path.GetExtension(fileName).ToLower();
+
+                    string fileExtension = Path.GetExtension(fileName);
 
                     string UploadfileName;
-
-                    string base64String;
-
-                    Stream copiedStream;
 
                     switch (fileExtension)
                     {
                         case ".pdf":
                             UploadfileName = document.DocumentID + "." + fileExtension;   //we only store number as file name in OSS because Chinese characters cause error
-                            FileStream = file.OpenReadStream();
                           
-                            FileStream.Seek(0, SeekOrigin.Begin);  // Resetting the stream's position// string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
-                            base64String = StoreCompressedScreenshotInDatabase(file);  //return a base64 string that we can conver to image
-
                             break;
                         case ".docx":
                             UploadfileName = document.DocumentID + "." + "pdf";   //we only store number as file name in OSS because Chinese characters cause error
-                                                                                  // string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
-                            FileStream = ConvertDocxToPdfStream(file);
-                            copiedStream = CopyToMemoryStream(FileStream);
-                            FileStream.Seek(0, SeekOrigin.Begin);  // Resetting the stream's position
-                            base64String = StoreCompressedScreenshotInDatabaseDocx(copiedStream);
-                            
+                          
                             break;
+
                         //case ".pptx":   //don't support PPT for now
-                        //    UploadfileName = document.DocumentID + "." + "pdf";
-                        //    FileStream = ConvertPptToPdfStream(file);
-                        //    break;
+                        //   break;
+
                         default:
                             ViewBag.ErrorMessage = "Unsupported file type.";
                             return View(document);
                     }
 
-                  
+
+
                     string documentIDTemp = document.DocumentID;
                     // Find the position of the dot in fileName
                     int dotIndex = fileName.IndexOf(".");
@@ -277,10 +268,32 @@ namespace StudentFileShare6.Controllers
                         fileName = fileName.Insert(dotIndex, documentIDTemp);
                     }
 
+                    Stream FileStream;
 
+                    switch (fileExtension)
+                    {
+                        case ".pdf":
+                             
+                            FileStream = file.OpenReadStream();
 
+                          
+                            break;
+                        case ".docx":
+                                                                                // string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
+                            FileStream = ConvertDocxToPdfStream(file);
+                            
 
-                   
+                            break;
+
+                        //case ".pptx":   //don't support PPT for now
+                        //   break;
+
+                        default:
+                            ViewBag.ErrorMessage = "Unsupported file type.";
+                            return View(document);
+                    }
+
+                    
 
 
 
@@ -312,18 +325,8 @@ namespace StudentFileShare6.Controllers
                         await streamProgressCallbackAsync(sender, args, document, document.DocumentID, _hubContext);
                     };
 
-                    try
-                    {
-                        ossClient.PutObject(putObjectRequest);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log the exception or handle it
-                        //  Console.WriteLine(ex.Message);
-                        Debug.WriteLine("PutObject error:");
-                        Debug.WriteLine(ex.Message); // Logs to web console
 
-                    }
+                    ossClient.PutObject(putObjectRequest);
 
 
 
@@ -339,7 +342,28 @@ namespace StudentFileShare6.Controllers
 
                     //---------------------------below for the link to first page of pdf
 
-                                                                                     //  var putObjectRequestForFirstPagePdf = new PutObjectRequest(bucketForFirstPagePdf, fileName, fileStream);
+                    string base64String;
+
+                    switch (fileExtension)
+                    {
+                        case ".pdf":
+                               base64String = StoreCompressedScreenshotInDatabase(file);  //return a base64 string that we can conver to image
+
+                            break;
+                        case ".docx":
+                                 base64String = StoreCompressedScreenshotInDatabaseDocx(FileStream);
+
+                            break;
+                        //case ".pptx":   //don't support PPT for now
+                        //    UploadfileName = document.DocumentID + "." + "pdf";
+                        //    FileStream = ConvertPptToPdfStream(file);
+                        //    break;
+                        default:
+                            ViewBag.ErrorMessage = "Unsupported file type.";
+                            return View(document);
+                    }
+
+
 
                     // Convert base64 string to byte array
                     byte[] byteArray = Convert.FromBase64String(base64String);
@@ -366,7 +390,7 @@ namespace StudentFileShare6.Controllers
                 document.LikeNumber = 0;
                 document.DislikeNumber = 0;
                 document.Rating = null;
-            
+
                 _context.Add(document);
                 await _context.SaveChangesAsync();
                 //  return RedirectToAction(nameof(Index));    
@@ -375,6 +399,8 @@ namespace StudentFileShare6.Controllers
 
                 return RedirectToAction("DocumentCreateSuccess", "Document");   //redirect to "DocumentCreateSuccess" action of "Document" controller
             }
+
+
             //ViewData["CourseID"] = new SelectList(_context.Set<Course>(), "CourseID", "CourseID", document.CourseID);
             //ViewData["SchoolID"] = new SelectList(_context.Set<University>(), "SchoolID", "SchoolID", document.SchoolID);
             return View(document);
