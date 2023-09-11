@@ -27,6 +27,12 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using RestSharp;
 using NPinyin;
+using Spire.Doc;
+using Spire.Presentation;
+using Document = StudentFileShare6.Models.Document;
+using DocumentSpire = Spire.Doc;
+using FileFormat = Spire.Presentation.FileFormat;
+using System.Diagnostics;
 
 namespace StudentFileShare6.Controllers
 {
@@ -205,12 +211,12 @@ namespace StudentFileShare6.Controllers
                 if (file != null && file.Length > 0)
                 {
 
-                     
+                    Stream FileStream;
 
-                //    var configuration = new ConfigurationBuilder()
-                //.SetBasePath(Directory.GetCurrentDirectory())
-                //.AddJsonFile("appsettings.json")
-                //.Build();
+                    //    var configuration = new ConfigurationBuilder()
+                    //.SetBasePath(Directory.GetCurrentDirectory())
+                    //.AddJsonFile("appsettings.json")
+                    //.Build();
 
                     var accessKeyId = _configuration["CloudOSSConnection:accessKeyId"];
 
@@ -224,11 +230,43 @@ namespace StudentFileShare6.Controllers
                     //another method see https://www.alibabacloud.com/help/en/object-storage-service/latest/disable-overwrite-for-objects-with-the-same-name-3
                     string fileName = Path.GetFileName(file.FileName);  // assuming fileName is "example.txt"
                    
-                    string fileExtension = Path.GetExtension(fileName);
-                    
-                    string UploadfileName = document.DocumentID+"."+ fileExtension;   //we only store number as file name in OSS because Chinese characters cause error
-                   // string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
+                    string fileExtension = Path.GetExtension(fileName).ToLower();
 
+                    string UploadfileName;
+
+                    string base64String;
+
+                    Stream copiedStream;
+
+                    switch (fileExtension)
+                    {
+                        case ".pdf":
+                            UploadfileName = document.DocumentID + "." + fileExtension;   //we only store number as file name in OSS because Chinese characters cause error
+                            FileStream = file.OpenReadStream();
+                          
+                            FileStream.Seek(0, SeekOrigin.Begin);  // Resetting the stream's position// string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
+                            base64String = StoreCompressedScreenshotInDatabase(file);  //return a base64 string that we can conver to image
+
+                            break;
+                        case ".docx":
+                            UploadfileName = document.DocumentID + "." + "pdf";   //we only store number as file name in OSS because Chinese characters cause error
+                                                                                  // string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
+                            FileStream = ConvertDocxToPdfStream(file);
+                            copiedStream = CopyToMemoryStream(FileStream);
+                            FileStream.Seek(0, SeekOrigin.Begin);  // Resetting the stream's position
+                            base64String = StoreCompressedScreenshotInDatabaseDocx(copiedStream);
+                            
+                            break;
+                        //case ".pptx":   //don't support PPT for now
+                        //    UploadfileName = document.DocumentID + "." + "pdf";
+                        //    FileStream = ConvertPptToPdfStream(file);
+                        //    break;
+                        default:
+                            ViewBag.ErrorMessage = "Unsupported file type.";
+                            return View(document);
+                    }
+
+                  
                     string documentIDTemp = document.DocumentID;
                     // Find the position of the dot in fileName
                     int dotIndex = fileName.IndexOf(".");
@@ -240,7 +278,9 @@ namespace StudentFileShare6.Controllers
                     }
 
 
-                    var fileStream = file.OpenReadStream();
+
+
+                   
 
 
 
@@ -264,7 +304,7 @@ namespace StudentFileShare6.Controllers
 
                     //
 
-                    var putObjectRequest = new PutObjectRequest(bucketName, UploadfileName, fileStream);
+                    var putObjectRequest = new PutObjectRequest(bucketName, UploadfileName, FileStream);
                     //putObjectRequest.StreamTransferProgress += (object sender, StreamTransferProgressArgs args) => streamProgressCallbackAsync(sender, args, document, document.DocumentID, _hubContext);
 
                     putObjectRequest.StreamTransferProgress += async (object sender, StreamTransferProgressArgs args) =>
@@ -272,8 +312,18 @@ namespace StudentFileShare6.Controllers
                         await streamProgressCallbackAsync(sender, args, document, document.DocumentID, _hubContext);
                     };
 
+                    try
+                    {
+                        ossClient.PutObject(putObjectRequest);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the exception or handle it
+                        //  Console.WriteLine(ex.Message);
+                        Debug.WriteLine("PutObject error:");
+                        Debug.WriteLine(ex.Message); // Logs to web console
 
-                    ossClient.PutObject(putObjectRequest);
+                    }
 
 
 
@@ -289,8 +339,7 @@ namespace StudentFileShare6.Controllers
 
                     //---------------------------below for the link to first page of pdf
 
-                    string base64String = StoreCompressedScreenshotInDatabase(file);  //return a base64 string that we can conver to image
-                                                                                      //  var putObjectRequestForFirstPagePdf = new PutObjectRequest(bucketForFirstPagePdf, fileName, fileStream);
+                                                                                     //  var putObjectRequestForFirstPagePdf = new PutObjectRequest(bucketForFirstPagePdf, fileName, fileStream);
 
                     // Convert base64 string to byte array
                     byte[] byteArray = Convert.FromBase64String(base64String);
@@ -330,6 +379,94 @@ namespace StudentFileShare6.Controllers
             //ViewData["SchoolID"] = new SelectList(_context.Set<University>(), "SchoolID", "SchoolID", document.SchoolID);
             return View(document);
         }
+
+        public MemoryStream ConvertDocxToPdfStream(IFormFile inputFile)
+        {
+            try
+            {
+                // Load the document from the input stream
+                DocumentSpire.Document document = new DocumentSpire.Document();
+                using (var inputStream = inputFile.OpenReadStream())
+                {
+                    document.LoadFromStream(inputStream, DocumentSpire.FileFormat.Docx);
+                }
+
+                // Convert and return as a MemoryStream
+                MemoryStream outputStream = new MemoryStream();
+                document.SaveToStream(outputStream, DocumentSpire.FileFormat.PDF);
+                outputStream.Position = 0; // Reset the stream's position
+                return outputStream;
+            }
+            catch (Exception ex)
+            {
+                // Log or handle the exception as needed
+                Console.WriteLine($"Error converting DOCX to PDF: {ex.Message}");
+                return null;
+            }
+        }
+
+
+        //public MemoryStream ConvertPptToPdfStream(IFormFile inputFile)
+        //    {
+        //        try
+        //        {
+        //            // Load the presentation from the input stream
+        //            Presentation presentation = new Presentation();
+        //            using (var inputStream = inputFile.OpenReadStream())
+        //            {
+        //                presentation.LoadFromStream(inputStream, FileFormat.Pptx2013); // Specifying Pptx format here
+        //            }
+
+        //            // Convert and return as a MemoryStream
+        //            MemoryStream outputStream = new MemoryStream();
+        //            presentation.SaveToStream(outputStream, FileFormat.PDF);
+        //            outputStream.Position = 0; // Reset the stream's position
+        //            return outputStream;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            // Log or handle the exception as needed
+        //            Console.WriteLine($"Error converting PPTX to PDF: {ex.Message}");
+        //            return null;
+        //        }
+        //    }
+
+        //public MemoryStream ConvertPptToPdfStream(IFormFile inputFile)
+        //{
+        //    try
+        //    {
+        //        // Load the presentation from the input stream
+        //        Presentation presentation = new Presentation();
+        //        using (var inputStream = inputFile.OpenReadStream())
+        //        {
+        //            presentation.LoadFromStream(inputStream, FileFormat.Pptx2013);
+        //        }
+
+        //        // Convert and save to a temporary file
+        //        string tempFilePath = Path.GetTempFileName();
+        //        presentation.SaveToFile(tempFilePath, FileFormat.PDF);
+
+        //        // Read the converted file into a MemoryStream
+        //        MemoryStream outputStream = new MemoryStream();
+        //        using (var fileStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.Read))
+        //        {
+        //            fileStream.CopyTo(outputStream);
+        //        }
+
+        //        // Optionally, delete the temporary file
+        //        System.IO.File.Delete(tempFilePath);
+
+
+        //        outputStream.Position = 0; // Reset the stream's position
+        //        return outputStream;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log or handle the exception as needed
+        //        Console.WriteLine($"Error converting PPTX to PDF: {ex.Message}");
+        //        return null;
+        //    }
+        //}
 
         public async Task<IActionResult> streamProgressCallbackAsync(object sender, StreamTransferProgressArgs args, Document document, string fileID, IHubContext<ProgressHub> progressHubContext)
         //to display upload progress dynamically so we need use async
@@ -379,8 +516,37 @@ namespace StudentFileShare6.Controllers
             }
         }
 
+        private string StoreCompressedScreenshotInDatabaseDocx(Stream pdfStream)
+        {
+            using (var pdfDocument = PdfDocument.Load(pdfStream))
+            {
+                using (var imageStream = new MemoryStream())
+                {
+                    var pdfPage = pdfDocument.Render(0, 300, 300, false); // Adjust width and height as needed
+
+                    EncoderParameters encoderParams = new EncoderParameters(1);
+                    encoderParams.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 50L);
+
+                    ImageCodecInfo jpegCodec = ImageCodecInfo.GetImageDecoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+
+                    pdfPage.Save(imageStream, jpegCodec, encoderParams);
+
+                    byte[] imageBytes = imageStream.ToArray();
+                    string base64Image = Convert.ToBase64String(imageBytes);
+
+                    return base64Image;    // Return the base64-encoded representation of the first page of the PDF
+                }
+            }
+        }
 
 
+        private MemoryStream CopyToMemoryStream(Stream input)
+        {
+            var memoryStream = new MemoryStream();
+            input.CopyTo(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return memoryStream;
+        }
 
 
         // GET: Document/Edit/5
