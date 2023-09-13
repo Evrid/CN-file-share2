@@ -194,12 +194,13 @@
             var file = event.target.files[0];
             var fileSize = file.size / 1024 / 1024; // Size in MB
 
-            //if (!file.type.match('application/pdf')) {
-            //    document.getElementById('fileInputError').textContent = '请选择一个PDF文件。';
-            //    alert("请选择一个PDF文件。"); // Please select a PDF file.
-            //    event.target.value = ''; // Clear the file input
-            //    return;
-            //}
+            if (!file.type.match('application/pdf') && !file.type.match('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+                document.getElementById('fileInputError').textContent = '请选择一个PDF或DOCX文件。'; // Please select a PDF or DOCX file.
+                alert("请选择一个PDF或DOCX文件。");
+                event.target.value = ''; // Clear the file input
+                return;
+            }
+
 
             if (fileSize > 10) {
                 document.getElementById('fileInputError').textContent = '文件大小必须小于10MB。';
