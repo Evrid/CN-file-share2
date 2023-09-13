@@ -683,17 +683,24 @@ namespace StudentFileShare6.Controllers
             //example link: https://localhost:7192/Document/docview/ABCSchool/Mathematics/SampleDocument/456
             //before adding MapControllerRoute in Program.cs used https://localhost:7192/Document/DocView?schoolName=ABCSchool&courseName=Mathematics&documentName=SampleDocument&documentID=456
 
+            var theDocument = await _context.Document.FirstOrDefaultAsync(d => d.DocumentID == documentID); // Assuming "Documents" is the DbSet for your "Document" SQL table
+
+            var theUniversity = await _universityContext.Universities.FirstOrDefaultAsync(d => d.SchoolID == theDocument.SchoolID); // Assuming "Documents" is the DbSet for your "Document" SQL table
+
+
             var model = new DocumentViewModel
             {
                 SchoolName = schoolName,
                 CourseName = courseName,
                 DocumentName = documentName,
-                DocumentID = documentID
+                DocumentID = documentID,
+                SchoolID = theDocument.SchoolID,
+                UniversityLocation = theUniversity.Location,
+                CourseID=theDocument.CourseID,
             };
 
 
-            var theDocument = await _context.Document.FirstOrDefaultAsync(d => d.DocumentID == documentID); // Assuming "Documents" is the DbSet for your "Document" SQL table
-                                                                                                            //I want to find item in the "Document" SQL table that column "DocumentID" equals the "documentID" we have, then set "Link" of that "DocumentID" to "Link" of  this "model"
+                                                                                                             //I want to find item in the "Document" SQL table that column "DocumentID" equals the "documentID" we have, then set "Link" of that "DocumentID" to "Link" of  this "model"
             if (theDocument != null)
             {
                 var httpsUrl = theDocument.Link.Replace("http://", "https://");

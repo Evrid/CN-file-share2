@@ -4,6 +4,12 @@
     //use in DocumentController DocView() method, for individual page of each document
     {
         public string SchoolName { get; set; }
+
+        public string SchoolID { get; set; }
+
+        public string UniversityLocation { get; set; }
+
+        public string CourseID { get; set; }
         public string CourseName { get; set; }
         public string DocumentName { get; set; }
         public string DocumentID { get; set; }

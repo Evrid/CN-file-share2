@@ -108,10 +108,21 @@
 
 
 <div class="upperdiv">
-    <span><i class="bi bi-file-earmark-fill"></i>    课程名称：@Model.CourseName</span>
-    <span><i class="bi bi-file-earmark-pdf"></i>   文件名称: @Model.DocumentName</span>
+    <span>
+        <a href="/University/UniversityView/?schoolID=@Model.SchoolID&schoolName=@Model.SchoolName&schoolLocation=@Model.UniversityLocation" target="_blank">
+            <i class="bi bi-file-earmark-fill"></i> 大学名称：@Model.SchoolName
+        </a>
+    </span>
+    <span>
+        <a href="/Course/Courseview/?schoolName=@Model.SchoolName&courseName=@Model.CourseName&courseID=@Model.CourseID" target="_blank">
+            <i class="bi bi-file-earmark-fill"></i> 课程名称：@Model.CourseName
+        </a>
+    </span>
+    <span><i class="bi bi-file-earmark-pdf"></i> 文件名称: @Model.DocumentName</span>
     <span>Document ID: @Model.DocumentID</span>
 </div>
+
+
 
 <br />
 
