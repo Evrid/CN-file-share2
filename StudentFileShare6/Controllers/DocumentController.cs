@@ -397,7 +397,10 @@ namespace StudentFileShare6.Controllers
 
                 // return RedirectToAction("Index", "Home"); //redirect to "index" action of "home" controller
 
-                return RedirectToAction("DocumentCreateSuccess", "Document");   //redirect to "DocumentCreateSuccess" action of "Document" controller
+               // return RedirectToAction("DocumentCreateSuccess", "Document");   //redirect to "DocumentCreateSuccess" action of "Document" controller
+
+                return RedirectToAction("DocumentCreateSuccess", "Document", new { id = document.DocumentID });
+
             }
 
 
@@ -721,11 +724,19 @@ namespace StudentFileShare6.Controllers
             return Redirect(href);
         }
 
-        public async Task<IActionResult> DocumentCreateSuccess()
+        public async Task<IActionResult> DocumentCreateSuccess(string id)
         {
-            //after upload complete we show this
-            return View();
+            var document = await _context.Document.Include(d => d.University).Include(d => d.Course)
+                             .FirstOrDefaultAsync(d => d.DocumentID == id);
+
+            if (document == null)
+            {
+                return NotFound();
+            }
+
+            return View(document);
         }
+
 
     }
 }
