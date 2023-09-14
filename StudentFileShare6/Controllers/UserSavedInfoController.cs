@@ -56,8 +56,11 @@ namespace StudentFileShare6.Controllers
 
             if (existingSavedCourse != null)
             {
-                // Course is already saved
-                return Json(new { success = false, message = "课程已收藏" });
+                // Course is already saved, so remove it
+                _context.UserSavedInfo.Remove(existingSavedCourse);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "课程已移除收藏" }); // course removed from saved
             }
 
             var courseToSave = await _courseContext.Course
@@ -100,8 +103,11 @@ namespace StudentFileShare6.Controllers
 
             if (existingSavedUniversity != null)
             {
-                // Course is already saved
-                return Json(new { success = false, message = "大学已收藏" });
+                // University is already saved, so remove it
+                _context.UserSavedInfo.Remove(existingSavedUniversity);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "大学已移除收藏" }); // university removed from saved
             }
 
             var universityToSave = await _universityContext.Universities
@@ -142,7 +148,15 @@ namespace StudentFileShare6.Controllers
             if (existingSavedDocument != null)
             {
                 // Document is already saved
-                return Json(new { success = false, message = "文档已收藏" });
+                //return Json(new { success = false, message = "文档已收藏" });
+
+                // Document is already saved, so remove it
+                _context.UserSavedInfo.Remove(existingSavedDocument);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "文档已移除收藏" }); // document removed from saved
+
+
             }
 
             var documentToSave = await _documentContext.Document
