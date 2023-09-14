@@ -120,6 +120,10 @@
     </span>
     <span><i class="bi bi-file-earmark-pdf"></i> 文件名称: @Model.DocumentName</span>
     <span>文件ID: @Model.DocumentID</span>
+
+    <button id="saveDocumentBtn">收藏文件</button>
+
+
 </div>
 
 
@@ -725,3 +729,19 @@
     }
 
 </script>
+
+<script>
+
+    // New code to save a document
+    $("#saveDocumentBtn").click(function () {
+        $.ajax({
+            url: '@Url.Action("SaveDocument", "UserSavedInfo")',
+            type: 'POST',
+            data: { documentId: '@Model.DocumentID' },
+            success: function (response) {
+                alert(response.message);
+            }
+        });
+    });
+</script>
+
