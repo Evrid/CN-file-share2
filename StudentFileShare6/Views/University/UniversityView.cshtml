@@ -55,8 +55,34 @@
                     } else {
                         alert(response.message);
                     }
+
+                    if (response.isFavorited) {
+                        $('#saveUniversityBtn').text('取消收藏大学');
+                    } else {
+                        $('#saveUniversityBtn').text('收藏大学');
+                    }
                 }
             });
         });
     </script>
+
+    <script>
+
+        $(document).ready(function () {
+            $.ajax({
+                url: '@Url.Action("IsUniversityFavorited", "UserSavedInfo")', // Endpoint for checking if university is saved
+                type: 'GET',
+                data: { universityId: '@Model.SchoolID' },
+                success: function (response) {
+                    if (response.isFavorited) {
+                        $('#saveUniversityBtn').text('取消收藏大学');
+                    } else {
+                        $('#saveUniversityBtn').text('收藏大学');
+                    }
+                }
+            });
+        });
+
+    </script>
+
 }

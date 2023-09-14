@@ -68,8 +68,37 @@
                     } else {
                         alert(response.message);
                     }
+
+                    if (response.isFavorited) {
+                        $('#saveCourseBtn').text('取消收藏课程');
+                    } else {
+                        $('#saveCourseBtn').text('收藏课程');
+                    }
                 }
             });
         });
     </script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            // Make an AJAX request when the page loads
+            $.ajax({
+                url: '@Url.Action("IsCourseFavorited", "UserSavedInfo")',
+                type: 'GET',
+                data: { courseId: '@Model.CourseID' },
+                success: function (response) {
+                    if (response.isFavorited) {
+                        $('#saveCourseBtn').text('取消收藏课程');
+                    } else {
+                        $('#saveCourseBtn').text('收藏课程');
+                    }
+                }
+            });
+        });
+
+    </script>
+
 }
+

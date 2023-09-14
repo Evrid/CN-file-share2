@@ -44,6 +44,26 @@ namespace StudentFileShare6.Controllers
         }
 
 
+
+        [HttpGet]
+        public async Task<IActionResult> IsCourseFavorited(string courseId)
+        {
+            var userId = _userManager.GetUserId(User);  // Get current logged-in user's id
+
+            // First, check if the course is already saved by the user
+            var existingSavedCourse = await _context.UserSavedInfo
+                .Where(u => u.UserId == userId && u.CourseID == courseId)
+                .FirstOrDefaultAsync();
+
+            if (existingSavedCourse != null)
+            {
+                // var isFavorited = true;
+                return Json(new { isFavorited = true });
+            }
+
+            return Json(new { isFavorited = false });
+        }
+
         [HttpPost]
         public async Task<IActionResult> SaveCourse(string courseId)
         {
@@ -60,7 +80,7 @@ namespace StudentFileShare6.Controllers
                 _context.UserSavedInfo.Remove(existingSavedCourse);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "课程已移除收藏" }); // course removed from saved
+                return Json(new { success = true, message = "课程已移除收藏" ,isFavorited = false }); // course removed from saved
             }
 
             var courseToSave = await _courseContext.Course
@@ -86,9 +106,29 @@ namespace StudentFileShare6.Controllers
             _context.UserSavedInfo.Add(userSavedInfo);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = false, message = "课程收藏成功" });
+            return Json(new { success = false, message = "课程收藏成功" , isFavorited = true});
         }
 
+
+
+        [HttpGet]
+        public async Task<IActionResult> IsUniversityFavorited(string universityId)
+        {
+            var userId = _userManager.GetUserId(User);  // Get current logged-in user's id
+
+            // First, check if the course is already saved by the user
+            var existingSavedUniversity = await _context.UserSavedInfo
+                .Where(u => u.UserId == userId && u.SchoolID == universityId)
+                .FirstOrDefaultAsync();
+
+            if (existingSavedUniversity != null)
+            {
+                // var isFavorited = true;
+                return Json(new { isFavorited = true });
+            }
+
+            return Json(new { isFavorited = false });
+        }
 
 
         [HttpPost]
@@ -107,7 +147,7 @@ namespace StudentFileShare6.Controllers
                 _context.UserSavedInfo.Remove(existingSavedUniversity);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "大学已移除收藏" }); // university removed from saved
+                return Json(new { success = true, message = "大学已移除收藏",isFavorited = false }); // university removed from saved
             }
 
             var universityToSave = await _universityContext.Universities
@@ -131,7 +171,27 @@ namespace StudentFileShare6.Controllers
             _context.UserSavedInfo.Add(userSavedInfo);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = false, message = "大学收藏成功" });
+            return Json(new { success = false, message = "大学收藏成功", isFavorited = true });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> IsDocumentFavorited(string documentId)
+        {
+            var userId = _userManager.GetUserId(User);  // Get current logged-in user's id
+
+            // First, check if the document is already saved by the user
+            var existingSavedDocument = await _context.UserSavedInfo
+                .Where(u => u.UserId == userId && u.DocumentID == documentId)
+                .FirstOrDefaultAsync();
+
+            if (existingSavedDocument != null)
+            {
+               // var isFavorited = true;
+                return Json(new { isFavorited = true });
+            }
+
+            return Json(new { isFavorited = false });
         }
 
 
@@ -154,7 +214,7 @@ namespace StudentFileShare6.Controllers
                 _context.UserSavedInfo.Remove(existingSavedDocument);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "文档已移除收藏" }); // document removed from saved
+                return Json(new { success = true, message = "文档已移除收藏" , isFavorited = false}); // document removed from saved
 
 
             }
@@ -184,7 +244,7 @@ namespace StudentFileShare6.Controllers
             _context.UserSavedInfo.Add(userSavedInfo);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true, message = "文档收藏成功" });
+            return Json(new { success = true, message = "文档收藏成功" , isFavorited = true });
         }
 
     }

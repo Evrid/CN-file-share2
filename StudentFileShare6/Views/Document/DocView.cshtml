@@ -740,8 +740,33 @@
             data: { documentId: '@Model.DocumentID' },
             success: function (response) {
                 alert(response.message);
+
+                if (response.isFavorited) {
+                    $('#saveDocumentBtn').text('取消收藏文件');
+                } else {
+                    $('#saveDocumentBtn').text('收藏文件');
+                }
             }
         });
     });
 </script>
 
+            <script>
+
+    $(document).ready(function () {
+        // Make an AJAX request when the page loads
+        $.ajax({
+            url: '@Url.Action("IsDocumentFavorited", "UserSavedInfo")',
+            type: 'GET',
+            data: { documentId: '@Model.DocumentID' },
+            success: function (response) {
+                if (response.isFavorited) {
+                    $('#saveDocumentBtn').text('取消收藏文件');
+                } else {
+                    $('#saveDocumentBtn').text('收藏文件');
+                }
+            }
+        });
+    });
+
+            </script>
