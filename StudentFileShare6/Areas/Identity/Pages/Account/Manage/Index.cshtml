@@ -21,6 +21,15 @@
                 <label asp-for="Input.PhoneNumber" class="form-label"></label>
                 <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
             </div>
+
+                   <div class="form-group">
+                <label asp-for="Input.VerificationCode"></label>
+                <input asp-for="Input.VerificationCode" class="form-control" />
+                <span asp-validation-for="Input.VerificationCode" class="text-danger"></span>
+                <button type="button" id="getCodeBtn">获取验证码</button>
+                <span id="timer"></span>
+            </div>
+
             <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">保存</button>
         </form>
     </div>
@@ -28,4 +37,62 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+
+            let countdown;
+
+            let timeLeft = 60; // 60 seconds
+
+
+            function startCountdown() {
+                $("#getCodeBtn").prop('disabled', true); // Disable the button
+                countdown = setInterval(function () {
+                    if (timeLeft <= 0) {
+                        clearInterval(countdown);
+                        $("#timer").text('');
+                        $("#getCodeBtn").prop('disabled', false); // Re-enable the button
+                    } else {
+                        $("#timer").text(`(${timeLeft} 秒之后可重新获取验证码)`);
+                        timeLeft--;
+                    }
+                }, 1000);
+            }
+
+
+            $("#getCodeBtn").click(function () {
+                const phoneNumber = $("#Input_PhoneNumber").val();
+
+                if (!phoneNumber) {
+                    // Display an appropriate message to the user
+                    alert("请输入电话号码。");
+                    return;
+                }
+
+                // Start the countdown when the button is clicked
+                timeLeft = 60; // Reset the timer to 60 seconds
+                startCountdown();
+
+
+                $.ajax({
+                    url: '/SMS/GenerateCode',
+                    method: 'POST',
+                    data: { phoneNumber: phoneNumber },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                        } else {
+                            alert("Error: " + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert("生成验证码时出错。");
+                    }
+                });
+            });
+        });
+
+
+    </script>
 }

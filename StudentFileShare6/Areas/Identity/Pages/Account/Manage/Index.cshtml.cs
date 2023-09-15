@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Caching.Memory;
+
 
 namespace StudentFileShare6.Areas.Identity.Pages.Account.Manage
 {
@@ -16,20 +18,24 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private IMemoryCache _cache;
 
         public IndexModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            IMemoryCache memoryCache
+            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _cache = memoryCache;
         }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-       
+
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -64,6 +70,12 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account.Manage
             [Display(Name = "用户名")]
             [StringLength(10, MinimumLength = 4, ErrorMessage = "用户名长度必须在4到10个字符之间。")]
             public string UserName { get; set; }
+
+
+            [Required(ErrorMessage = "验证码为必填项。")]
+            [Display(Name = "验证码")]
+            public string VerificationCode { get; set; }
+
         }
 
         private async Task LoadAsync(IdentityUser user)
@@ -71,12 +83,12 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
-        
+
 
             Input = new InputModel
             {
                 PhoneNumber = phoneNumber,
-            UserName = userName
+                UserName = userName
             };
         }
 
@@ -85,7 +97,7 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account.Manage
         {
             var user = await _userManager.GetUserAsync(User);
 
-         
+
 
 
             if (user == null)
@@ -121,6 +133,21 @@ namespace StudentFileShare6.Areas.Identity.Pages.Account.Manage
                 //    }
                 //}
                 await LoadAsync(user);
+                return Page();
+            }
+
+
+            if (_cache.TryGetValue(Input.PhoneNumber, out string storedCode))
+            {
+                if (storedCode != Input.VerificationCode)
+                {
+                    ModelState.AddModelError(string.Empty, "验证码错误。");
+                    return Page();
+                }
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "验证码已过期或错误。");
                 return Page();
             }
 
