@@ -185,119 +185,120 @@ namespace StudentFileShare6.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("DocumentID,Name,SchoolID,CourseID,Year,Category,Description,Anonymous,UserID,Link")] Document document, IFormFile file)
         {
-
-
-            if (!ModelState.IsValid)
+            try
             {
-                // Log validation errors
-                foreach (var modelStateEntry in ModelState.Values)
+
+                if (!ModelState.IsValid)
                 {
-                    foreach (var error in modelStateEntry.Errors)
+                    // Log validation errors
+                    foreach (var modelStateEntry in ModelState.Values)
                     {
-                        System.Diagnostics.Debug.WriteLine(error.ErrorMessage);
+                        foreach (var error in modelStateEntry.Errors)
+                        {
+                            System.Diagnostics.Debug.WriteLine(error.ErrorMessage);
+                        }
                     }
+
+                    return View(document);
                 }
 
-                return View(document);
-            }
 
 
 
-
-            if (ModelState.IsValid)
-            {
-
-
-                document.GenerateRandomDocumentID(_context);
-
-                if (file != null && file.Length > 0)
+                if (ModelState.IsValid)
                 {
 
 
-                 
+                    document.GenerateRandomDocumentID(_context);
 
-                    //    var configuration = new ConfigurationBuilder()
-                    //.SetBasePath(Directory.GetCurrentDirectory())
-                    //.AddJsonFile("appsettings.json")
-                    //.Build();
-
-                    var accessKeyId = _configuration["CloudOSSConnection:accessKeyId"];
-
-
-                    var accessKeySecret = _configuration["CloudOSSConnection:accessKeySecret"];
-                    var endpoint = _configuration["CloudOSSConnection:endpoint"];
-                    var bucketName = _configuration["CloudOSSConnection:bucketName"];
-                    var bucketForFirstPagePdf = _configuration["CloudOSSConnection:bucketNameForFirstPagePdf"];
-
-                    // because for OSS, if you upload an object that has the same name as an existing object, the existing object is overwritten by the uploaded object
-                    //another method see https://www.alibabacloud.com/help/en/object-storage-service/latest/disable-overwrite-for-objects-with-the-same-name-3
-                    string fileName = Path.GetFileName(file.FileName);  // assuming fileName is "example.txt"
-
-                    string fileExtension = Path.GetExtension(fileName);
-
-                    string UploadfileName;
-
-                    switch (fileExtension)
+                    if (file != null && file.Length > 0)
                     {
-                        case ".pdf":
-                            UploadfileName = document.DocumentID + "." + fileExtension;   //we only store number as file name in OSS because Chinese characters cause error
-                          
-                            break;
-                        case ".docx":
-                            UploadfileName = document.DocumentID + "." + "pdf";   //we only store number as file name in OSS because Chinese characters cause error
-                          
-                            break;
-
-                        //case ".pptx":   //don't support PPT for now
-                        //   break;
-
-                        default:
-                            ViewBag.ErrorMessage = "Unsupported file type.";
-                            return View(document);
-                    }
 
 
 
-                    string documentIDTemp = document.DocumentID;
-                    // Find the position of the dot in fileName
-                    int dotIndex = fileName.IndexOf(".");
-                    //to add document ID in front of the dot to let files have different names
-                    if (dotIndex != -1)
-                    {
-                        // Insert documentID in front of the dot
-                        fileName = fileName.Insert(dotIndex, documentIDTemp);
-                    }
 
-                    Stream FileStream;
+                        //    var configuration = new ConfigurationBuilder()
+                        //.SetBasePath(Directory.GetCurrentDirectory())
+                        //.AddJsonFile("appsettings.json")
+                        //.Build();
 
-                    switch (fileExtension)
-                    {
-                        case ".pdf":
-                             
-                            FileStream = file.OpenReadStream();
-
-                          
-                            break;
-                        case ".docx":
-                                                                                // string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
-                            FileStream = ConvertDocxToPdfStream(file);
-                            
-
-                            break;
-
-                        //case ".pptx":   //don't support PPT for now
-                        //   break;
-
-                        default:
-                            ViewBag.ErrorMessage = "Unsupported file type.";
-                            return View(document);
-                    }
-
-                    
+                        var accessKeyId = _configuration["CloudOSSConnection:accessKeyId"];
 
 
+                        var accessKeySecret = _configuration["CloudOSSConnection:accessKeySecret"];
+                        var endpoint = _configuration["CloudOSSConnection:endpoint"];
+                        var bucketName = _configuration["CloudOSSConnection:bucketName"];
+                        var bucketForFirstPagePdf = _configuration["CloudOSSConnection:bucketNameForFirstPagePdf"];
 
-                    document.FileUploadProgresses = new List<FileUploadProgress>
+                        // because for OSS, if you upload an object that has the same name as an existing object, the existing object is overwritten by the uploaded object
+                        //another method see https://www.alibabacloud.com/help/en/object-storage-service/latest/disable-overwrite-for-objects-with-the-same-name-3
+                        string fileName = Path.GetFileName(file.FileName);  // assuming fileName is "example.txt"
+
+                        string fileExtension = Path.GetExtension(fileName);
+
+                        string UploadfileName;
+
+                        switch (fileExtension)
+                        {
+                            case ".pdf":
+                                UploadfileName = document.DocumentID + "." + fileExtension;   //we only store number as file name in OSS because Chinese characters cause error
+
+                                break;
+                            case ".docx":
+                                UploadfileName = document.DocumentID + "." + "pdf";   //we only store number as file name in OSS because Chinese characters cause error
+
+                                break;
+
+                            //case ".pptx":   //don't support PPT for now
+                            //   break;
+
+                            default:
+                                ViewBag.ErrorMessage = "Unsupported file type.";
+                                return View(document);
+                        }
+
+
+
+                        string documentIDTemp = document.DocumentID;
+                        // Find the position of the dot in fileName
+                        int dotIndex = fileName.IndexOf(".");
+                        //to add document ID in front of the dot to let files have different names
+                        if (dotIndex != -1)
+                        {
+                            // Insert documentID in front of the dot
+                            fileName = fileName.Insert(dotIndex, documentIDTemp);
+                        }
+
+                        Stream FileStream;
+
+                        switch (fileExtension)
+                        {
+                            case ".pdf":
+
+                                FileStream = file.OpenReadStream();
+
+
+                                break;
+                            case ".docx":
+                                // string UploadfileName = Pinyin.GetPinyin(file.FileName)+ "." + fileExtension;  //we need to convert to Pinyin because Chinese characters cause error when store in OSS
+                                FileStream = ConvertDocxToPdfStream(file);
+
+
+                                break;
+
+                            //case ".pptx":   //don't support PPT for now
+                            //   break;
+
+                            default:
+                                ViewBag.ErrorMessage = "Unsupported file type.";
+                                return View(document);
+                        }
+
+
+
+
+
+                        document.FileUploadProgresses = new List<FileUploadProgress>
                     //for a progress bar show upload percenatge
                       {
                    new FileUploadProgress { FileID =document.DocumentID, ProgressPercentage = 0 }
@@ -308,105 +309,135 @@ namespace StudentFileShare6.Controllers
 
 
 
-                    var ossClient = new OssClient(endpoint, accessKeyId, accessKeySecret);
+                        var ossClient = new OssClient(endpoint, accessKeyId, accessKeySecret);
 
 
 
 
-                    //---------------------------below for the link to the full file
+                        //---------------------------below for the link to the full file
 
-                    //
+                        //
 
-                    var putObjectRequest = new PutObjectRequest(bucketName, UploadfileName, FileStream);
-                    //putObjectRequest.StreamTransferProgress += (object sender, StreamTransferProgressArgs args) => streamProgressCallbackAsync(sender, args, document, document.DocumentID, _hubContext);
+                        var putObjectRequest = new PutObjectRequest(bucketName, UploadfileName, FileStream);
+                        //putObjectRequest.StreamTransferProgress += (object sender, StreamTransferProgressArgs args) => streamProgressCallbackAsync(sender, args, document, document.DocumentID, _hubContext);
 
-                    putObjectRequest.StreamTransferProgress += async (object sender, StreamTransferProgressArgs args) =>
-                    {
-                        await streamProgressCallbackAsync(sender, args, document, document.DocumentID, _hubContext);
-                    };
-
-
-                    ossClient.PutObject(putObjectRequest);
+                        putObjectRequest.StreamTransferProgress += async (object sender, StreamTransferProgressArgs args) =>
+                        {
+                            await streamProgressCallbackAsync(sender, args, document, document.DocumentID, _hubContext);
+                        };
 
 
-
-                    var request = new GeneratePresignedUriRequest(bucketName, UploadfileName, SignHttpMethod.Get);
-                    request.Expiration = DateTime.UtcNow.AddYears(100); // Set expiration to a distant future date, practically making it non-expiring
-
-                    var objectUrl = ossClient.GeneratePresignedUri(request); // Generate the pre-signed URL
-
-
-                    document.Link = objectUrl.ToString();
-
-                    //---------------------------above for the link to the full file
-
-                    //---------------------------below for the link to first page of pdf
-
-                    string base64String;
-
-                    switch (fileExtension)
-                    {
-                        case ".pdf":
-                               base64String = StoreCompressedScreenshotInDatabase(file);  //return a base64 string that we can conver to image
-
-                            break;
-                        case ".docx":
-                                 base64String = StoreCompressedScreenshotInDatabaseDocx(FileStream);
-
-                            break;
-                        //case ".pptx":   //don't support PPT for now
-                        //    UploadfileName = document.DocumentID + "." + "pdf";
-                        //    FileStream = ConvertPptToPdfStream(file);
-                        //    break;
-                        default:
-                            ViewBag.ErrorMessage = "Unsupported file type.";
+                        try
+                        {
+                            ossClient.PutObject(putObjectRequest);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"OSS PutObject error: {ex.Message}");
+                            ModelState.AddModelError("", "An error occurred while uploading the document. Please try again.");
                             return View(document);
+                        }
+
+
+
+
+                        var request = new GeneratePresignedUriRequest(bucketName, UploadfileName, SignHttpMethod.Get);
+                        request.Expiration = DateTime.UtcNow.AddYears(100); // Set expiration to a distant future date, practically making it non-expiring
+
+                        var objectUrl = ossClient.GeneratePresignedUri(request); // Generate the pre-signed URL
+
+
+                        document.Link = objectUrl.ToString();
+
+                        //---------------------------above for the link to the full file
+
+                        //---------------------------below for the link to first page of pdf
+
+                        string base64String;
+
+                        switch (fileExtension)
+                        {
+                            case ".pdf":
+                                base64String = StoreCompressedScreenshotInDatabase(file);  //return a base64 string that we can conver to image
+
+                                break;
+                            case ".docx":
+                                base64String = StoreCompressedScreenshotInDatabaseDocx(FileStream);
+
+                                break;
+                            //case ".pptx":   //don't support PPT for now
+                            //    UploadfileName = document.DocumentID + "." + "pdf";
+                            //    FileStream = ConvertPptToPdfStream(file);
+                            //    break;
+                            default:
+                                ViewBag.ErrorMessage = "Unsupported file type.";
+                                return View(document);
+                        }
+
+
+
+                        // Convert base64 string to byte array
+                        byte[] byteArray = Convert.FromBase64String(base64String);
+
+                        ossClient.PutObject(bucketForFirstPagePdf, document.DocumentID, new MemoryStream(byteArray));
+
+
+                        var requestForPdfFirstPage = new GeneratePresignedUriRequest(bucketForFirstPagePdf, document.DocumentID, SignHttpMethod.Get);
+                        requestForPdfFirstPage.Expiration = DateTime.UtcNow.AddYears(100); // Set expiration to a distant future date, practically making it non-expiring
+
+                        var objectUrlPdfFirstPage = ossClient.GeneratePresignedUri(requestForPdfFirstPage); // Generate the pre-signed URL
+
+
+                        document.FirstPageImageLink = objectUrlPdfFirstPage.ToString();
+
+
+
+
+                        //---------------------------above for the link to first page of pdf
+
                     }
 
 
-
-                    // Convert base64 string to byte array
-                    byte[] byteArray = Convert.FromBase64String(base64String);
-
-                    ossClient.PutObject(bucketForFirstPagePdf, document.DocumentID, new MemoryStream(byteArray));
+                    document.LikeNumber = 0;
+                    document.DislikeNumber = 0;
+                    document.Rating = null;
 
 
-                    var requestForPdfFirstPage = new GeneratePresignedUriRequest(bucketForFirstPagePdf, document.DocumentID, SignHttpMethod.Get);
-                    requestForPdfFirstPage.Expiration = DateTime.UtcNow.AddYears(100); // Set expiration to a distant future date, practically making it non-expiring
+                    try
+                    {
+                        _context.Add(document);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateException dbEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Database update error: {dbEx.Message}");
+                        ModelState.AddModelError("", "Error saving document data. Please try again.");
+                        return View(document);
+                    }
 
-                    var objectUrlPdfFirstPage = ossClient.GeneratePresignedUri(requestForPdfFirstPage); // Generate the pre-signed URL
 
+                    //  return RedirectToAction(nameof(Index));    
 
-                    document.FirstPageImageLink = objectUrlPdfFirstPage.ToString();
+                    // return RedirectToAction("Index", "Home"); //redirect to "index" action of "home" controller
 
+                    // return RedirectToAction("DocumentCreateSuccess", "Document");   //redirect to "DocumentCreateSuccess" action of "Document" controller
 
-
-
-                    //---------------------------above for the link to first page of pdf
+                    return RedirectToAction("DocumentCreateSuccess", "Document", new { id = document.DocumentID });
 
                 }
 
 
-                document.LikeNumber = 0;
-                document.DislikeNumber = 0;
-                document.Rating = null;
-
-                _context.Add(document);
-                await _context.SaveChangesAsync();
-                //  return RedirectToAction(nameof(Index));    
-
-                // return RedirectToAction("Index", "Home"); //redirect to "index" action of "home" controller
-
-               // return RedirectToAction("DocumentCreateSuccess", "Document");   //redirect to "DocumentCreateSuccess" action of "Document" controller
-
-                return RedirectToAction("DocumentCreateSuccess", "Document", new { id = document.DocumentID });
-
+                //ViewData["CourseID"] = new SelectList(_context.Set<Course>(), "CourseID", "CourseID", document.CourseID);
+                //ViewData["SchoolID"] = new SelectList(_context.Set<University>(), "SchoolID", "SchoolID", document.SchoolID);
+                return View(document);
             }
 
-
-            //ViewData["CourseID"] = new SelectList(_context.Set<Course>(), "CourseID", "CourseID", document.CourseID);
-            //ViewData["SchoolID"] = new SelectList(_context.Set<University>(), "SchoolID", "SchoolID", document.SchoolID);
-            return View(document);
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"General error: {ex.Message}");
+                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+                return View(document);
+            }
         }
 
         public MemoryStream ConvertDocxToPdfStream(IFormFile inputFile)
