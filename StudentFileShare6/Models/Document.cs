@@ -38,6 +38,7 @@ namespace StudentFileShare6.Models
         public University? University { get; set; }
         public Course? Course { get; set; }
 
+        public List<Report>? Reports { get; set; }   //nullable
 
         //  public DbSet<UserSavedInfo>? UserSavedInfos { get; set; }
         public ICollection<UserSavedInfo>? UserSavedInfos { get; set; }
