@@ -43,28 +43,41 @@
 @section Scripts {
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
         $("#saveUniversityBtn").click(function () {
-            $.ajax({
-                url: '@Url.Action("SaveUniversity", "UserSavedInfo")',
-                type: 'POST',
-                data: { universityId: '@Model.SchoolID' },
-                success: function (response) {
-                    if (response.success) {
-                        alert(response.message);
-                    } else {
-                        alert(response.message);
-                    }
+        @if (Context.User.Identity.IsAuthenticated)
+        {
+            <text>
+                    $.ajax({
+                        url: '@Url.Action("SaveUniversity", "UserSavedInfo")',
+                        type: 'POST',
+                        data: { universityId: '@Model.SchoolID' },
+                        success: function (response) {
+                            if (response.success) {
+                                alert(response.message);
+                            } else {
+                                alert(response.message);
+                            }
 
-                    if (response.isFavorited) {
-                        $('#saveUniversityBtn').text('取消收藏大学');
-                    } else {
-                        $('#saveUniversityBtn').text('收藏大学');
-                    }
-                }
+                            if (response.isFavorited) {
+                                $('#saveUniversityBtn').text('取消收藏大学');
+                            } else {
+                                $('#saveUniversityBtn').text('收藏大学');
+                            }
+                        }
+                    });
+            </text>
+        }
+        else
+        {
+            <text>
+                    alert('请先登录才能收藏');
+            </text>
+        }
             });
-        });
     </script>
+
 
     <script>
 

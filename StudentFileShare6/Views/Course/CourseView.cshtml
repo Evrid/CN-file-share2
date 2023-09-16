@@ -56,28 +56,42 @@
 @section Scripts {
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
         $("#saveCourseBtn").click(function () {
-            $.ajax({
-                url: '@Url.Action("SaveCourse", "UserSavedInfo")',
-                type: 'POST',
-                data: { courseId: '@Model.CourseID' },
-                success: function (response) {
-                    if (response.success) {
-                        alert(response.message);
-                    } else {
-                        alert(response.message);
-                    }
+        @if (Context.User.Identity.IsAuthenticated)
+        {
+            <text>
+                    $.ajax({
+                        url: '@Url.Action("SaveCourse", "UserSavedInfo")',
+                        type: 'POST',
+                        data: { courseId: '@Model.CourseID' },
+                        success: function (response) {
+                            if (response.success) {
+                                alert(response.message);
+                            } else {
+                                alert(response.message);
+                            }
 
-                    if (response.isFavorited) {
-                        $('#saveCourseBtn').text('取消收藏课程');
-                    } else {
-                        $('#saveCourseBtn').text('收藏课程');
-                    }
-                }
+                            if (response.isFavorited) {
+                                $('#saveCourseBtn').text('取消收藏课程');
+                            } else {
+                                $('#saveCourseBtn').text('收藏课程');
+                            }
+                        }
+                    });
+            </text>
+        }
+        else
+        {
+            <text>
+                    alert('请先登录才能收藏');
+            </text>
+        }
             });
-        });
     </script>
+
+
 
 
     <script>
