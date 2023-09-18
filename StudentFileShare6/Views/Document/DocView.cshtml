@@ -191,7 +191,7 @@
         <label for="reportDescription">Description:</label>
         <textarea id="reportDescription"></textarea>
 
-        <button onclick="sendReport()">Send</button>
+        <button onclick="sendReport()">发送</button>
     </div>
 </div>
 
@@ -871,6 +871,8 @@
                 console.log(data);
                 alert("举报成功");
                 modal.style.display = "none";  // Hide the modal
+                // Disable the "举报文件" button
+                document.getElementById('reportButton').disabled = true;
             },
             error: function (error) {
                 console.error('Error:', error);
