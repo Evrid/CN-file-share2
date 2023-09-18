@@ -360,28 +360,28 @@
             };
             page.render(renderContext).promise.then(() => {
                 isPageRendering = false;
-                renderTextLayer(page, viewport, canvas);
+            //    renderTextLayer(page, viewport, canvas);
             });
         });
     }
 
 
-    function renderTextLayer(page, viewport, canvas) {
-        const textLayerDiv = document.createElement('div');
-        textLayerDiv.className = 'textLayer';
-        canvas.parentNode.appendChild(textLayerDiv);
+    //function renderTextLayer(page, viewport, canvas) {
+    //    const textLayerDiv = document.createElement('div');
+    //    textLayerDiv.className = 'textLayer';
+    //    canvas.parentNode.appendChild(textLayerDiv);
 
-        const customTextLayer = new window.TextLayerBuilder({
-            textLayerDiv,
-            pageIndex: page.pageIndex,
-            viewport,
-        });
+    //    const customTextLayer = new window.TextLayerBuilder({
+    //        textLayerDiv,
+    //        pageIndex: page.pageIndex,
+    //        viewport,
+    //    });
 
-        page.getTextContent().then(textContent => {
-            customTextLayer.setTextContent(textContent);
-            customTextLayer.render();
-        });
-    }
+    //    page.getTextContent().then(textContent => {
+    //        customTextLayer.setTextContent(textContent);
+    //        customTextLayer.render();
+    //    });
+    //}
 
     function handleScroll(event) {
         const container = event.target;
@@ -854,13 +854,32 @@
     }
 
     function sendReport() {
-        var type = document.getElementById('reportType').value;
-        var description = document.getElementById('reportDescription').value;
+        var documentID = '@Model.DocumentID';  // Fetch the Document ID from your Razor model
+        var type = parseInt(document.getElementById('reportType').value);
+        console.log ("test");
 
-        // Send the report via an AJAX call or similar
+        console.log(documentID);
 
-        modal.style.display = "none";
+        $.ajax({
+            type: "POST",
+            url: "/Report/Create",
+            data: {
+                DocumentID: documentID,
+                ReportType: type
+            },
+            success: function (data) {
+                console.log(data);
+                alert("举报成功");
+                modal.style.display = "none";  // Hide the modal
+            },
+            error: function (error) {
+                console.error('Error:', error);
+                alert("错误");
+            }
+        });
+
     }
+
 
 </script>
 

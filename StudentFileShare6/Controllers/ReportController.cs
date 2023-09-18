@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace StudentFileShare6.Controllers
 {
-    public class ReportsController : Controller
+    public class ReportController : Controller
     {
         private readonly ReportContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public ReportsController(ReportContext context, UserManager<IdentityUser> userManager)
+        public ReportController(ReportContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -22,13 +22,13 @@ namespace StudentFileShare6.Controllers
         // GET: Reports
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Reports.ToListAsync());
+            return View(await _context.Report.ToListAsync());
         }
 
         // GET: Reports/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var report = await _context.Reports.FindAsync(id);
+            var report = await _context.Report.FindAsync(id);
             if (report == null)
             {
                 return NotFound();
@@ -43,7 +43,7 @@ namespace StudentFileShare6.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+     //   [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(string DocumentID, int ReportType)
         {
             // Your logic to create a report as in the original PostReport method
@@ -60,7 +60,7 @@ namespace StudentFileShare6.Controllers
             do
             {
                 newReportID = GenerateRandom10DigitNumber();
-            } while (_context.Reports.Any(r => r.ReportID == newReportID));
+            } while (_context.Report.Any(r => r.ReportID == newReportID));
 
             report.ReportID = newReportID;
             report.ReportDate = DateTime.Now;  // Setting the ReportDate to the current date and time
@@ -75,11 +75,11 @@ namespace StudentFileShare6.Controllers
             // Else, leave report.UserID as it is
 
 
-            _context.Reports.Add(report);
+            _context.Report.Add(report);
             _context.SaveChanges();
 
-           
-            return View();
+            return Ok(new { status = "success", message = "Report created successfully." });
+           // return View();
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace StudentFileShare6.Controllers
                 return NotFound();
             }
 
-            var report = await _context.Reports.FindAsync(id);
+            var report = await _context.Report.FindAsync(id);
             if (report == null)
             {
                 return NotFound();
@@ -117,7 +117,7 @@ namespace StudentFileShare6.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+      //  [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ReportID, DocumentID, ReportType")] Report report)
         {
             // Logic for editing, similar to the original PutReport method
@@ -144,7 +144,7 @@ namespace StudentFileShare6.Controllers
                 return NotFound();
             }
 
-            var report = await _context.Reports
+            var report = await _context.Report
                 .FirstOrDefaultAsync(m => m.ReportID == id);
             if (report == null)
             {
@@ -155,13 +155,13 @@ namespace StudentFileShare6.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+       // [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             // Logic for deleting similar to original DeleteReport method
 
-            var report = await _context.Reports.FindAsync(id);
-            _context.Reports.Remove(report);
+            var report = await _context.Report.FindAsync(id);
+            _context.Report.Remove(report);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

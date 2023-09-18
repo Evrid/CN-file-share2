@@ -32,6 +32,10 @@ builder.Services.AddDbContext<UniversityContext>(options =>
 builder.Services.AddDbContext<UserSavedInfoContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))); // Use ServerVersion.AutoDetect()
 
+builder.Services.AddDbContext<ReportContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+
 //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 //    .AddEntityFrameworkStores<ApplicationDatabaseConnection>();
 
