@@ -4,17 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using StudentFileShare6.Models;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Identity;
-
+using System.Threading.Tasks;
 
 namespace StudentFileShare6.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ReportsController : ControllerBase
+    public class ReportsController : Controller
     {
-        private readonly ReportContext _context; // Assuming you have a DbContext named YourDbContext
-    
+        private readonly ReportContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
         public ReportsController(ReportContext context, UserManager<IdentityUser> userManager)
@@ -23,30 +19,36 @@ namespace StudentFileShare6.Controllers
             _userManager = userManager;
         }
 
-        // GET: api/Reports
-        [HttpGet]
-        public ActionResult<IEnumerable<Report>> GetReports()
+        // GET: Reports
+        public async Task<IActionResult> Index()
         {
-            return _context.Reports.ToList();
+            return View(await _context.Reports.ToListAsync());
         }
 
-        // GET: api/Reports/5
-        [HttpGet("{id}")]
-        public ActionResult<Report> GetReport(int id)
+        // GET: Reports/Details/5
+        public async Task<IActionResult> Details(int id)
         {
-            var report = _context.Reports.Find(id);
+            var report = await _context.Reports.FindAsync(id);
             if (report == null)
             {
                 return NotFound();
             }
-            return report;
+            return View(report);
         }
 
-        // POST: api/Reports
-        [HttpPost]
-        public ActionResult<Report> PostReport(string DocumentID, int ReportType)
+        // GET: Reports/Create
+        public IActionResult Create()
         {
-            Report report=new Report();
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(string DocumentID, int ReportType)
+        {
+            // Your logic to create a report as in the original PostReport method
+
+            Report report = new Report();
 
             // Get the ID of the currently logged-in user
             var userId = _userManager.GetUserId(User);
@@ -62,7 +64,8 @@ namespace StudentFileShare6.Controllers
 
             report.ReportID = newReportID;
             report.ReportDate = DateTime.Now;  // Setting the ReportDate to the current date and time
-
+            report.DocumentID = DocumentID;
+            report.ReportType= ReportType; 
 
             // If the user is logged in, save their ID.
             if (userId != null)
@@ -75,7 +78,8 @@ namespace StudentFileShare6.Controllers
             _context.Reports.Add(report);
             _context.SaveChanges();
 
-            return CreatedAtAction("GetReport", new { id = report.ReportID }, report);
+           
+            return View();
         }
 
         /// <summary>
@@ -95,35 +99,71 @@ namespace StudentFileShare6.Controllers
         }
 
 
-        // PUT: api/Reports/5
-        [HttpPut("{id}")]
-        public IActionResult PutReport(int id, Report report)
+
+        // GET: Reports/Edit/5
+        public async Task<IActionResult> Edit(int? id)
         {
-            if (id != report.ReportID)
+            if (id == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(report).State = EntityState.Modified;
-            _context.SaveChanges();
-
-            return NoContent();
+            var report = await _context.Reports.FindAsync(id);
+            if (report == null)
+            {
+                return NotFound();
+            }
+            return View(report);
         }
 
-        // DELETE: api/Reports/5
-        [HttpDelete("{id}")]
-        public IActionResult DeleteReport(int id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("ReportID, DocumentID, ReportType")] Report report)
         {
-            var report = _context.Reports.Find(id);
+            // Logic for editing, similar to the original PutReport method
+
+            if (id != report.ReportID)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.Update(report);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(report);
+        }
+
+        // GET: Reports/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var report = await _context.Reports
+                .FirstOrDefaultAsync(m => m.ReportID == id);
             if (report == null)
             {
                 return NotFound();
             }
 
-            _context.Reports.Remove(report);
-            _context.SaveChanges();
+            return View(report);
+        }
 
-            return NoContent();
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            // Logic for deleting similar to original DeleteReport method
+
+            var report = await _context.Reports.FindAsync(id);
+            _context.Reports.Remove(report);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
     }
 }
