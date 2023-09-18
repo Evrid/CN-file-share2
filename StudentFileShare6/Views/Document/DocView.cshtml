@@ -104,6 +104,35 @@
         justify-content: space-around;
         border-radius: 50px;
     }*/
+
+    .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    position: relative;
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 400px;
+    background-color: #fff;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
 </style>
 
 
@@ -123,6 +152,7 @@
 
     <button id="saveDocumentBtn">收藏文件</button>
 
+    <button id="reportButton">举报文件</button>
 
 </div>
 
@@ -143,6 +173,26 @@
     <button id="likeButton" onclick="likeDocument('@Model.DocumentID')" class="like"><i class="bi bi-hand-thumbs-up"></i>  顶</button>
     <button id="dislikeButton" onclick="dislikeDocument('@Model.DocumentID')" class="like"><i class="bi bi-hand-thumbs-down"></i>  踩</button>
 
+</div>
+
+
+<div id="reportModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>举报文件</h2>
+
+        <label for="reportType">Report Type:</label>
+        <select id="reportType">
+            <option value="1">文件质量低</option>
+            <option value="2">课程错误</option>
+            <!-- Add more types as needed -->
+        </select>
+
+        <label for="reportDescription">Description:</label>
+        <textarea id="reportDescription"></textarea>
+
+        <button onclick="sendReport()">Send</button>
+    </div>
 </div>
 
 
@@ -780,3 +830,37 @@
     });
 
             </script>
+
+
+
+<script>
+
+    var modal = document.getElementById('reportModal');
+    var btn = document.getElementById("reportButton");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function () {
+        modal.style.display = "block";
+    }
+
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function sendReport() {
+        var type = document.getElementById('reportType').value;
+        var description = document.getElementById('reportDescription').value;
+
+        // Send the report via an AJAX call or similar
+
+        modal.style.display = "none";
+    }
+
+</script>
+

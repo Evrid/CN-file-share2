@@ -8,7 +8,7 @@ public class ReportContext : DbContext
     {
     }
 
-    public DbSet<Report> Report { get; set; }
+    public DbSet<Report> Reports { get; set; }
     // Other DbSets like Users, Documents, etc.
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
